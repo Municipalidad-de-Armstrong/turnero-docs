@@ -21,7 +21,7 @@ El desarrollo en los repositorios de código (`turnero` y `turnero_api`) debe re
 Cada fase de la hoja de ruta debe producir artefactos legibles y procesables de forma unívoca:
 
 ### A. Modelado de Dominio (Fase 2)
-- Todo modelo de datos debe documentarse en `docs/03-modelo-dominio.md`.
+- Todo modelo de datos debe documentarse en `modelo-dominio.md`.
 - Debe incluir un diagrama **Entity-Relationship (ERD)** utilizando la sintaxis de **Mermaid**.
 - Cada tabla debe detallar:
   - Nombre de la columna, tipo de dato SQL exacto (ej. `VARCHAR(255)`, `TIMESTAMP WITH TIME ZONE`).
@@ -53,7 +53,7 @@ Cada fase de la hoja de ruta debe producir artefactos legibles y procesables de 
     - `422 Unprocessable Entity` para errores de esquema en el request.
 
 ### C. Especificaciones de UI/UX (Fase 4)
-- El archivo `docs/05-frontend-ux-ui.md` debe definir:
+- El archivo `frontend-ux-ui.md` debe definir:
   - **Rutas del Frontend:** Mapa del sitio explícito con accesos por rol (Público, Ciudadano, Administrativo, Administrador).
   - **Jerarquía de Componentes:** Componentes atómicos (Botones, Inputs) vs. Componentes de Negocio (CalendarioTurnos, ListaTramites).
   - **Estrategia de Renderizado (SSR vs CSR):** Definir para cada página de Next.js si se utilizará Server-Side Rendering, Static Site Generation o Client-Side Rendering.

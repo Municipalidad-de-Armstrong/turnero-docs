@@ -2,7 +2,7 @@
 
 > Sistema: **Turnero** — Municipalidad de Armstrong
 > Alcance: sistema web multi-área para reserva y gestión de turnos ciudadanos.
-> **Fuente de verdad:** [`00-requerimientos-iniciales.md`](00-requerimientos-iniciales.md)
+> **Fuente de verdad:** [`iniciales.md`](iniciales.md)
 > Cada historia/flujo referencia los IDs de requerimiento del análisis: `ADM-xx` (Administrador), `ADT-xx` (Administrativo), `USU-xx` (Usuario/Ciudadano).
 
 ---
@@ -32,22 +32,22 @@ Usuario externo que se registra y gestiona sus turnos por una interfaz amigable.
 
 **No puede:** ver turnos ajenos, gestionar agendas ni acceder al panel administrativo.
 
-### 1.2 Administrativo (usuario interno, por área) — `ADT`
+### 1.2 Administrativo (usuario interno) — `ADT`
 
-Operador interno con **panel exclusivo**; ingresa con email + contraseña (`ADT-01`, `ADT-02`). Su alcance es el área a la que está asignado.
+Operador interno con **panel exclusivo**; ingresa con email + contraseña (`ADT-01`, `ADT-02`). Los usuarios administrativos tienen acceso global y pueden gestionar todas las áreas del municipio.
 
 | Permiso | Req. | Descripción |
 |---|---|---|
 | Panel exclusivo | `ADT-01` | Acceso a un panel de administración propio del rol. |
 | Gestión operativa | `ADT-03` | Gestiona turnos, usuarios y trámites desde su panel. |
 | Carga manual de turnos | `ADT-04` | Crea turnos de fuentes externas (presencial, WhatsApp, teléfono). |
-| Modificar turnos | `ADT-05` | Modifica los datos de cualquier turno existente de su área. |
+| Modificar turnos | `ADT-05` | Modifica los datos de cualquier turno existente de cualquier área. |
 | Documentación por trámite | `ADT-06` | Asigna la documentación requerida a cada trámite. |
 | Registrar horarios y fechas | `ADT-07` | Define horarios y fechas de los turnos (agenda). |
-| Cargar sobreturnos | `ADT-08` | Sobreturnos asignados a un día específico, **ordenados por prioridad**. |
-| Resultado del trámite | `ADT-09` | Marca el turno como **"completo" o "incompleto"** (resultado satisfactorio o no). |
+| Cargar sobreturnos | `ADT-08` | Sobretornos asignados a un día específico, **ordenados por prioridad**. |
+| Resultado del trámite | `ADT-09` | Marca el turno como **"completo", "incompleto" o "ausente"** (trámite satisfactorio, no satisfactorio o inasistencia). |
 
-**No puede:** gestionar otras áreas, gestionar cuentas administrativas ni la configuración global del sistema.
+**No puede:** gestionar cuentas administrativas ni la configuración global del sistema.
 
 ### 1.3 Administrador (administrador global) — `ADM`
 
@@ -96,26 +96,26 @@ Convención: **HU-XX** · *Como `<actor>`, quiero `<acción>` para `<valor>`.* S
 - **HU-12** `USU-11` — *Como Ciudadano, quiero ver mis turnos y sobreturnos.*
   - CA: sección con próximos turnos, sobreturnos e historial.
 - **HU-13** `USU-10` — *Como Ciudadano, quiero ser avisado cuando mi carnet esté por vencer.*
-  - CA: el sistema monitorea fecha de vencimiento del carnet y notifica (plataforma/email/WhatsApp) con anticipación configurada.
+  - CA: el sistema genera una entidad "Carnet" local asociada al ciudadano cuando su turno de un trámite habilitado (`emite_carnet = true`) se marca como completo. Un proceso en segundo plano monitorea los vencimientos y notifica al ciudadano (plataforma/email/WhatsApp) con 30 días de anticipación (parámetro configurable a nivel sistema).
 
 ### 2.3 Administrativo — Gestión operativa
 
-- **HU-14** `ADT-01` `ADT-03` — *Como Administrativo, quiero un panel para gestionar turnos, usuarios y trámites de mi área.*
+- **HU-14** `ADT-01` `ADT-03` — *Como Administrativo, quiero un panel para gestionar turnos, usuarios y trámites de cualquier área.*
 - **HU-15** `ADT-04` — *Como Administrativo, quiero cargar turnos manualmente (presencial/WhatsApp/teléfono).*
   - CA: busca ciudadano por DNI o lo registra al vuelo; asigna trámite + variante + horario.
-- **HU-16** `ADT-05` — *Como Administrativo, quiero modificar los datos de cualquier turno existente de mi área.*
+- **HU-16** `ADT-05` — *Como Administrativo, quiero modificar los datos de cualquier turno existente en el sistema.*
 - **HU-17** `ADT-06` — *Como Administrativo, quiero asignar la documentación requerida a cada trámite.*
 - **HU-18** `ADT-07` — *Como Administrativo, quiero registrar horarios y fechas de los turnos (agenda).*
 - **HU-19** `ADT-08` — *Como Administrativo, quiero cargar sobreturnos para un día específico, ordenados por prioridad.*
-  - CA: turno extra fuera de la agenda regular; marcado `es_sobturno`; ordenado por prioridad.
-- **HU-20** `ADT-09` — *Como Administrativo, quiero cerrar un turno marcándolo completo o incompleto.*
-  - CA: al finalizar la atención marca **"completo"** (trámite satisfactorio) o **"incompleto"**.
+  - CA: turno extra fuera de la agenda regular; marcado `es_sobturno`; ordenado por prioridad asignada manualmente (Alta, Media, Baja) y sub-ordenado cronológicamente. Límite diario de sobreturnos configurable por trámite/área (por defecto 5, permitiendo deshabilitar/ilimitado).
+- **HU-20** `ADT-09` — *Como Administrativo, quiero cerrar un turno marcándolo completo, incompleto o ausente.*
+  - CA: al finalizar el turno marca **"completo"** (trámite satisfactorio), **"incompleto"** (asistió pero faltó documentación u otra razón) o **"ausente"** (no asistió). Si el trámite genera carnet, al marcar "completo" el administrativo ingresa la fecha de vencimiento para registrar el Carnet localmente.
 
 ### 2.4 Administrador — Administración global
 
 - **HU-21** `ADM-01` — *Como Administrador, quiero gestionar el sistema completo.*
 - **HU-22** `ADM-02` — *Como Administrador, opero como cuenta única sembrada con todos los privilegios.*
-- **HU-23** `ADM-03` — *Como Administrador, quiero crear cuentas para usuarios administrativos y asignarlos a áreas.*
+- **HU-23** `ADM-03` — *Como Administrador, quiero crear cuentas para usuarios administrativos.*
 - **HU-24** `ADM-04` — *Como Administrador, quiero eliminar usuarios administrativos.*
 
 ---
@@ -139,7 +139,7 @@ Convención: **HU-XX** · *Como `<actor>`, quiero `<acción>` para `<valor>`.* S
 
 **Actor:** Ciudadano · **Precondición:** sesión iniciada, cuenta activa.
 
-1. Ciudadano elige **tipo de trámite** y luego **variante(s)**; puede seleccionar **más de una variante** (`USU-04`).
+1. Ciudadano elige **tipo de trámite** y luego **variante(s)**; puede seleccionar **más de una variante** (`USU-04`). El sistema calcula la duración total del turno sumando la duración de todas las variantes seleccionadas para agendar un bloque continuo único de tiempo.
 2. Sistema muestra documentación requerida del trámite (`ADT-06`) y la disponibilidad real (`USU-06`).
 3. Ciudadano elige fecha/hora (`USU-05`) **o** usa **"primer turno disponible"** (`USU-07`).
 4. **Sistema valida disponibilidad** con bloqueo contra doble reserva (concurrencia).
@@ -153,12 +153,12 @@ Convención: **HU-XX** · *Como `<actor>`, quiero `<acción>` para `<valor>`.* S
 **Actor:** Administrativo · **Precondición:** se requiere un turno fuera de la agenda regular.
 
 1. El ciudadano (presencial/WhatsApp/teléfono) solicita atención sin cupo en agenda.
-2. Administrativo abre el día/trámite en su área y selecciona "Cargar sobreturno".
+2. Administrativo abre el día/trámite y selecciona "Cargar sobreturno".
 3. Sistema crea un turno extra para ese **día específico**, marcado `es_sobturno = true`.
-4. El sobreturno se **ordena por prioridad** respecto a los demás sobreturnos del día.
+4. El sobreturno se **ordena por prioridad** (Alta, Media, Baja asignada de forma manual) y, a igual prioridad, por orden cronológico de creación.
 5. Sistema notifica al ciudadano (plataforma/email/WhatsApp) con código/comprobante y planilla.
 
-**Alternativos:** límite diario de sobreturnos (política) → bloqueo y aviso; ciudadano no registrado → registro al vuelo (`HU-15`).
+**Alternativos:** límite diario de sobreturnos (límite configurable por área/trámite, por defecto 5 sobreturnos diarios) → bloqueo y aviso; ciudadano no registrado → registro al vuelo (`HU-15`).
 
 ### 3.4 Cancelación
 
@@ -166,26 +166,24 @@ Convención: **HU-XX** · *Como `<actor>`, quiero `<acción>` para `<valor>`.* S
 
 **Por ciudadano:**
 1. Ciudadano selecciona el turno y elige "Cancelar".
-2. Sistema verifica anticipación mínima.
+2. Sistema verifica anticipación mínima (parámetro configurable a nivel sistema, por defecto 24 horas).
 3. Turno → **Cancelado**; se libera el cupo.
 4. Notificación en plataforma, **email y WhatsApp**.
 
 **Por administrativo:**
-1. Administrativo localiza el turno en la cola del área.
+1. Administrativo localiza el turno en la cola.
 2. Indica motivo (obligatorio) y cancela.
 3. Turno → **Cancelado**; notificación al ciudadano por todos los canales; registro en auditoría.
 
-**Alternativos:** fuera de anticipación → el ciudadano no puede autodescancelar (contacta al área); turno ya cerrado → no se puede cancelar.
+**Alternativos:** fuera de anticipación → el ciudadano no puede autodescancelar (debe contactar a la municipalidad); turno ya cerrado → no se puede cancelar.
 
 ### 3.5 Cierre / resultado del trámite `ADT-09`
 
 **Actor:** Administrativo · **Precondición:** turno atendido.
 
 1. Administrativo atiende al ciudadano y, al finalizar, registra el resultado.
-2. Marca el turno como **"completo"** (trámite satisfactorio) o **"incompleto"** (no satisfactorio).
-3. El resultado queda registrado para reportes y, si corresponde, dispara el seguimiento de **vencimiento del carnet** (`USU-10`).
-
-> ⚠️ El estado de **ausencia/no-show** (el ciudadano no concurrió) no está contemplado explícitamente en el análisis; queda pendiente de confirmación con el cliente antes de formalizar la máquina de estados en Fase 2.
+2. Marca el turno como **"completo"** (trámite satisfactorio), **"incompleto"** (asistió pero no pudo completar) o **"ausente"** (no asistió al turno).
+3. Si el turno es "completo" y el trámite genera carnet, el Administrativo ingresa la fecha de vencimiento. El sistema genera el registro local de "Carnet" asociado al Ciudadano, disparando el proceso de seguimiento de **vencimiento del carnet** (`USU-10`).
 
 ---
 
@@ -193,25 +191,16 @@ Convención: **HU-XX** · *Como `<actor>`, quiero `<acción>` para `<valor>`.* S
 
 - **Roles y nombres:** alineados al análisis: **Administrador** (único, sembrado, `ADM-02`), **Administrativo** (`ADT`), **Usuario/Ciudadano** (`USU`).
 - **Autenticación ciudadano:** email + contraseña (decisión acordada con el cliente; complementa `USU-02`, que exige DNI/email/teléfono en el registro).
-- **Estructura multi-área:** extensión de diseño confirmada con el cliente, no contradice el análisis; acota el alcance de cada Administrativo.
+- **Estructura multi-área:** la arquitectura soporta múltiples áreas (ej. Rentas, Tránsito, etc.), y el usuario administrativo tiene acceso global para gestionar todas las áreas del sistema.
 - **Notificaciones:** **siempre** en plataforma + email + **WhatsApp** (`USU-08`). WhatsApp es un requerimiento, no diferido.
 - **Planilla:** descargable y enviada por email y WhatsApp (`USU-09`).
-- **Carnet:** el sistema debe trackear vencimientos y notificar (`USU-10`) → implica una entidad/atributo de carnet con fecha de vencimiento (a modelar en Fase 2).
-- **Sobreturno:** turno extra para un día específico, **ordenado por prioridad** (`ADT-08`).
-- **Resultado del turno:** **completo / incompleto** (`ADT-09`). El no-show queda pendiente de confirmar con el cliente.
-- **Reprogramación:** se tratará como cancelar + reservar en una sola operación (a formalizar en Fase 3).
+- **Carnet y Vencimientos:** se almacena una entidad "Carnet" en forma local e independiente vinculada al ciudadano (con su número, fecha de emisión y vencimiento) al momento de marcar como "completo" un turno de un trámite que emite carnet (`emite_carnet = true`). El sistema corre un proceso automático diario que envía notificaciones 30 días antes del vencimiento (configurable por el Administrador).
+- **Sobretornos:** se marcan con `es_sobturno = true` para un día específico. Cuentan con una prioridad asignada manualmente (Alta, Media, Baja) por el administrativo, ordenándose por prioridad y luego por orden de llegada (hora de creación). Existe un límite diario de sobreturnos configurable por trámite/área (por defecto 5, con opción a ilimitado).
+- **Resultado del turno:** los estados posibles para el resultado de un turno atendido/finalizado son: **completo** (trámite satisfactorio), **incompleto** (trámite no satisfactorio o no finalizado tras la asistencia) y **ausente** (el ciudadano no asistió al turno).
+- **Reprogramación y Cancelación:** la cancelación/reprogramación por parte del ciudadano está sujeta a un parámetro de anticipación mínima configurable en el sistema por el Administrador (por defecto 24 horas). La reprogramación opera lógicamente como una cancelación y nueva reserva en una sola transacción.
+- **Carrito de Variantes:** cuando un ciudadano selecciona múltiples variantes en un mismo turno, el sistema realiza una reserva de un bloque continuo único de tiempo equivalente a la suma de las duraciones de las variantes seleccionadas.
 
-## 5. Items pendientes de confirmar con el cliente
+---
 
-> [!WARNING]
-> **ESTADO: BLOQUEADO.** En cumplimiento de la guía de [estanderes-ingenieria.md](estanderes-ingenieria.md) y de la [01-hoja-de-ruta.md](01-hoja-de-ruta.md), las siguientes preguntas representan ambigüedades de negocio que bloquean el modelado de datos de la Fase 2. Deben ser respondidas y sus reglas de negocio integradas en este documento antes de proceder.
-
-1. ¿Existe el estado de **ausencia/no-show** (cuando el ciudadano no asiste al turno) además de completo/incompleto? (`ADT-09`). *Esto afecta la máquina de estados del turno.*
-2. ¿Cuál es la política de **límite diario de sobreturnos** por área/trámite? (`ADT-08`). *Esto define reglas de validación en la API.*
-3. ¿Cuál es el criterio exacto de **prioridad** de los sobreturnos (ej. orden de llegada, urgencia médica/social, prioridad administrativa)? *Afecta al ordenamiento en la cola de atención.*
-4. ¿Cuál es la anticipación mínima requerida para cancelar o reprogramar un turno por parte del ciudadano? *Afecta las validaciones de las historias de usuario de cancelación.*
-5. ¿Un Administrativo puede estar asignado a **más de un área** a la vez, o su relación es estrictamente de 1 a 1? *Afecta la cardinalidad de las tablas en la base de datos.*
-6. Alcance del seguimiento de **carnet**: ¿qué trámites emiten carnet, cómo se asocia un carnet al ciudadano, y con qué anticipación se debe disparar el aviso de vencimiento? (`USU-10`).
-7. **[NUEVO] Funcionamiento técnico del "Carrito de Variantes" (`USU-04`):** Cuando un ciudadano elige múltiples variantes en una reserva (ej. variante A de 20 min y variante B de 15 min), ¿cómo se calcula la duración del turno en la agenda? ¿El sistema debe reservar un bloque continuo de tiempo (ej. 35 minutos en un único slot) o reservar turnos separados?
-8. **[NUEVO] Gestión de la fecha de vencimiento del carnet (`USU-10`):** ¿El sistema de turnos es el que genera y almacena la información del carnet (es decir, persiste la entidad "Carnet" con su fecha de vencimiento cuando el administrativo marca "completo" en el turno)? ¿O debe integrarse con una base de datos externa de la Municipalidad?
-
+## 5. Historial de Resoluciones de Ambigüedades
+Todas las ambigüedades de negocio identificadas inicialmente en esta sección han sido resueltas en acuerdo con el cliente (véase Sección 4). No quedan pendientes de definición para el inicio de la Fase 2.

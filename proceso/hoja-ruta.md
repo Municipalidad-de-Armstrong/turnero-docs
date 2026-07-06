@@ -23,12 +23,12 @@ Este documento define la secuencia obligatoria de fases de especificación pre-d
 ---
 
 ## Fase 2: Modelado del Dominio y Reglas de Negocio
-> 📄 **Documento de salida:** [modelo-dominio.md](../estandares/modelo-dominio.md) (A generar)
+> 📄 **Documento de salida:** [modelo-dominio.md](../estandares/modelo-dominio.md) (Completado)
 
-- [ ] Modelar las entidades principales del sistema (Usuarios, Roles, Áreas, Trámites, Variantes, Turnos, Agenda, Sobretornos, Carnets).
-- [ ] Establecer relaciones de cardinalidad y restricciones SQL para cada entidad según los estándares de [ingenieria.md](../estandares/ingenieria.md).
-- [ ] Crear el diagrama Entity-Relationship (ERD) en formato Mermaid.
-- [ ] Documentar el ciclo de vida y la Máquina de Estados de la entidad `Turno` mediante un diagrama de estados Mermaid, detallando:
+- [x] Modelar las entidades principales del sistema (Usuarios, Roles, Áreas, Trámites, Variantes, Turnos, Agenda, Sobretornos, Carnets).
+- [x] Establecer relaciones de cardinalidad y restricciones SQL para cada entidad según los estándares de [ingenieria.md](../estandares/ingenieria.md).
+- [x] Crear el diagrama Entity-Relationship (ERD) en formato Mermaid.
+- [x] Documentar el ciclo de vida y la Máquina de Estados de la entidad `Turno` mediante un diagrama de estados Mermaid, detallando:
   - Transiciones válidas (ej: `Reservado` -> `Completo` / `Incompleto` / `Ausente`).
   - Restricciones de seguridad por rol para cada transición.
 

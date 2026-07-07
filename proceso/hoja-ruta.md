@@ -35,11 +35,11 @@ Este documento define la secuencia obligatoria de fases de especificación pre-d
 ---
 
 ## Fase 3: Diseño de Contratos de API
-> 📄 **Documento de salida:** `openspec/specs/openapi.yaml` (A generar)
+> 📄 **Documento de salida:** [openapi.yaml](../especificaciones/openapi.yaml) (Completado)
 
-- [ ] Mapear los endpoints RESTful necesarios para cumplir con todos los casos de uso descritos en la Fase 1.
-- [ ] Crear el contrato OpenAPI 3.0 en formato YAML, definiendo esquemas de entrada (Requests) y salida (Responses) de FastAPI.
-- [ ] Establecer el estándar de manejo de errores uniforme (Problem Details) y códigos de estado HTTP aplicables para cada endpoint.
+- [x] Mapear los endpoints RESTful necesarios para cumplir con todos los casos de uso descritos en la Fase 1.
+- [x] Crear el contrato OpenAPI 3.0 en formato YAML, definiendo esquemas de entrada (Requests) y salida (Responses) de FastAPI.
+- [x] Establecer el estándar de manejo de errores uniforme (Problem Details) y códigos de estado HTTP aplicables para cada endpoint.
 
 ---
 

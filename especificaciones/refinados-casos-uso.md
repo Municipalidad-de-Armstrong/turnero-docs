@@ -102,7 +102,7 @@ Convención: **HU-XX** · *Como `<actor>`, quiero `<acción>` para `<valor>`.* S
 
 - **HU-14** `ADT-01` `ADT-03` — *Como Administrativo, quiero un panel para gestionar turnos, usuarios y trámites de cualquier área.*
 - **HU-15** `ADT-04` — *Como Administrativo, quiero cargar turnos manualmente (presencial/WhatsApp/teléfono).*
-  - CA: busca ciudadano por DNI o lo registra al vuelo; asigna trámite + variante + horario.
+  - CA: busca ciudadano por DNI o lo registra de forma simultánea; asigna trámite + variante + horario.
 - **HU-16** `ADT-05` — *Como Administrativo, quiero modificar los datos de cualquier turno existente en el sistema.*
 - **HU-17** `ADT-06` — *Como Administrativo, quiero asignar la documentación requerida a cada trámite.*
 - **HU-18** `ADT-07` — *Como Administrativo, quiero registrar horarios y fechas de los turnos (agenda).*
@@ -158,7 +158,7 @@ Convención: **HU-XX** · *Como `<actor>`, quiero `<acción>` para `<valor>`.* S
 4. El sobreturno se **ordena por prioridad** (Alta, Media, Baja asignada de forma manual) y, a igual prioridad, por orden cronológico de creación.
 5. Sistema notifica al ciudadano (plataforma/email/WhatsApp) con código/comprobante y planilla.
 
-**Alternativos:** límite diario de sobreturnos (límite configurable por área/trámite, por defecto 5 sobreturnos diarios) → bloqueo y aviso; ciudadano no registrado → registro al vuelo (`HU-15`).
+**Alternativos:** límite diario de sobreturnos (límite configurable por área/trámite, por defecto 5 sobreturnos diarios) → bloqueo y aviso; ciudadano no registrado → registro simultáneo (`HU-15`).
 
 ### 3.4 Cancelación
 

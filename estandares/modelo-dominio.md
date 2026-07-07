@@ -150,7 +150,7 @@ Registra la información de contacto y credenciales de acceso para ciudadanos, a
 
 *Índices recomendados:*
 - `idx_usuarios_email` en `email` (búsqueda en login).
-- `idx_usuarios_dni` en `dni` (búsqueda de administrativos en creación al vuelo).
+- `idx_usuarios_dni` en `dni` (búsqueda de ciudadanos durante el registro simultáneo).
 
 ### 2.3 Tabla `areas`
 Entidades de administración del municipio (ej: Tránsito, Rentas, Obras Particulares).

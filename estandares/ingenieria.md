@@ -30,9 +30,9 @@ Cada fase de la hoja de ruta debe producir artefactos legibles y procesables de 
 - **Máquinas de Estado:** Las entidades con estados dinámicos (como `Turno`) deben poseer un diagrama de estados Mermaid que declare formalmente las transiciones permitidas y el rol requerido para realizarlas.
 
 ### B. Especificación de la API (Fase 3)
-- El contrato de la API se debe definir en un archivo OpenAPI 3.0 estándar (`openspec/specs/openapi.yaml`).
+- El contrato de la API se debe definir en un archivo OpenAPI 3.0 estándar ([openapi.yaml](../especificaciones/openapi.yaml)).
 - Reglas para el diseño de la API:
-  - **RESTful:** Recursos en plural (ej. `/api/v1/turnos`, `/api/v1/tramites`).
+  - **RESTful estricto:** Recursos en plural (ej. `/api/v1/turnos`, `/api/v1/tramites`). Queda estrictamente prohibido el uso de verbos en los paths o URIs de los endpoints (ej. evitar `/cancelar` o `/login`). Las transiciones y cambios de estado de un recurso deben gestionarse mediante actualizaciones parciales `PATCH` sobre el recurso (ej. cancelar o cerrar un turno se realiza modificando su propiedad `estado` mediante `PATCH /turnos/{id}`). La autenticación se modela como operaciones sobre recursos de tokens/sesión (`POST /auth/tokens` para login, y `DELETE /auth/tokens` para logout).
   - **Versionado:** Prefijo `/api/v1/` obligatorio.
   - **Manejo de Errores Estándar:** Las respuestas de error deben usar el formato RFC 7807 (Problem Details) o un esquema uniforme:
     ```json

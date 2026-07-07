@@ -53,8 +53,8 @@ Este documento define la secuencia obligatoria de fases de especificación pre-d
 ---
 
 ## Fase 5: Arquitectura de Infraestructura, Notificaciones y Seguridad
-> 📄 **Documento de salida:** [infraestructura-seguridad.md](../estandares/infraestructura-seguridad.md) (A generar)
+> 📄 **Documento de salida:** [infraestructura-seguridad.md](../estandares/infraestructura-seguridad.md) (Completado)
 
-- [ ] Planificar la infraestructura de la base de datos (PostgreSQL), la estrategia de indexación para búsquedas rápidas (por DNI/Fecha) y el uso de caché si aplica.
-- [ ] Definir la arquitectura asíncrona para el envío de notificaciones automáticas (WhatsApp and Email) sin bloquear el hilo principal de la API.
-- [ ] Documentar el flujo de auditoría de acciones administrativas y el protocolo de seguridad para la autenticación (JWT con cookies HttpOnly) y encriptación de datos sensibles.
+- [x] Planificar la infraestructura de la base de datos (PostgreSQL), la estrategia de indexación para búsquedas rápidas (por DNI/Fecha) y el uso de caché si aplica.
+- [x] Definir la arquitectura asíncrona para el envío de notificaciones automáticas (WhatsApp and Email) sin bloquear el hilo principal de la API.
+- [x] Documentar el flujo de auditoría de acciones administrativas y el protocolo de seguridad para la autenticación (JWT con cookies HttpOnly) y encriptación de datos sensibles.

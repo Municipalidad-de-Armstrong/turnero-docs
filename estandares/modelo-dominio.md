@@ -401,14 +401,7 @@ Este algoritmo permite encontrar la primera franja libre adecuada para la duraci
 ### 4.5 Alertas de Vencimiento de Carnet (HU-13)
 - Cuando un trámite que emite carnet finaliza con estado `COMPLETO`, el administrativo registra la `fecha_vencimiento` y se inserta el registro correspondiente en la tabla `carnets`.
 - **Daemon de Notificación Asíncrona (Cronjob)**:
-  - Cada día a las 08:00 (hora local), un proceso en segundo plano ejecuta la siguiente consulta:
-    ```sql
-    SELECT c.id, u.nombre, u.apellido, u.email, u.telefono, c.numero_carnet, c.fecha_vencimiento
-    FROM carnets c
-    JOIN usuarios u ON c.ciudadano_id = u.id
-    WHERE c.activo = TRUE
-      AND c.fecha_vencimiento = CURRENT_DATE + INTERVAL '30 days';
-    ```
+  - Cada día a las 08:00 (hora local), un proceso en segundo plano identifica todos los registros activos en la entidad de carnets cuyo vencimiento sea exactamente en 30 días, asociando el ciudadano titular para obtener sus datos de contacto.
   - Por cada carnet devuelto por la consulta, el sistema dispara tres tareas asíncronas de notificación sin bloquear el flujo principal:
     1. **Notificación en plataforma:** Registro en el tablón de notificaciones del ciudadano.
     2. **Notificación por Correo Electrónico:** Envío de plantilla HTML de aviso de renovación.

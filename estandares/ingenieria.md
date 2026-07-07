@@ -34,14 +34,7 @@ Cada fase de la hoja de ruta debe producir artefactos legibles y procesables de 
 - Reglas para el diseño de la API:
   - **RESTful estricto:** Recursos en plural (ej. `/api/v1/turnos`, `/api/v1/tramites`). Queda estrictamente prohibido el uso de verbos en los paths o URIs de los endpoints (ej. evitar `/cancelar` o `/login`). Las transiciones y cambios de estado de un recurso deben gestionarse mediante actualizaciones parciales `PATCH` sobre el recurso (ej. cancelar o cerrar un turno se realiza modificando su propiedad `estado` mediante `PATCH /turnos/{id}`). La autenticación se modela como operaciones sobre recursos de tokens/sesión (`POST /auth/tokens` para login, y `DELETE /auth/tokens` para logout).
   - **Versionado:** Prefijo `/api/v1/` obligatorio.
-  - **Manejo de Errores Estándar:** Las respuestas de error deben usar el formato RFC 7807 (Problem Details) o un esquema uniforme:
-    ```json
-    {
-      "detail": "Descripción legible del error",
-      "code": "CODIGO_ERROR_INTERNO",
-      "timestamp": "2026-07-04T01:21:59Z"
-    }
-    ```
+  - **Manejo de Errores Estándar:** Las respuestas de error deben usar el formato RFC 7807 (Problem Details) o un esquema uniforme que contenga una descripción legible del error (detail), un código de error interno (code), y la marca de tiempo de ocurrencia (timestamp).
   - **Códigos de Estado HTTP:**
     - `200 OK` para consultas exitosas.
     - `201 Created` para creación exitosa.
@@ -109,39 +102,17 @@ graph TD
 ```
 
 ### Variables de Entorno Requeridas (Estandarización para Agentes de IA)
-Para asegurar que el desarrollo por IA mantenga coherencia en las configuraciones locales y de entorno, se definen las siguientes variables obligatorias:
+Para asegurar que el desarrollo por IA mantenga coherencia en las configuraciones locales y de entorno, se definen las siguientes variables obligatorias a configurar conceptualmente:
 
-#### Backend (`turnero_api/.env.example`)
-```bash
-# Servidor y Entorno
-PORT=8000
-ENVIRONMENT=development # development | production
+#### Configuración del Backend (`turnero_api`):
+- **Puerto y Entorno:** Puerto de escucha (por defecto 8000) y entorno de ejecución (desarrollo o producción).
+- **Base de Datos:** URI de conexión a la base de datos PostgreSQL.
+- **Seguridad:** Clave secreta para la firma de tokens JWT, algoritmo de firma (ej. HS256) y tiempo de expiración de los tokens (en minutos).
+- **Notificaciones (SMTP - Correo):** Host del servidor SMTP, puerto de conexión, usuario, contraseña de aplicación y remitente.
+- **Notificaciones (WhatsApp API):** URL base del endpoint oficial de WhatsApp del municipio y token de autenticación.
 
-# Base de Datos
-DATABASE_URL=postgresql://user:password@localhost:5432/turnero_db
-
-# Seguridad
-JWT_SECRET=super_secret_token_change_in_production
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=1440 # 24 horas
-
-# Notificaciones - SMTP (Email)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USERNAME=notificaciones@armstrong.gov.ar
-SMTP_PASSWORD=contrasenia_aplicacion
-SMTP_FROM=notificaciones@armstrong.gov.ar
-
-# Notificaciones - WhatsApp API
-WHATSAPP_API_URL=https://api.whatsapp.armstrong.gov.ar/v1/send
-WHATSAPP_API_TOKEN=token_oficial_de_la_municipalidad
-```
-
-#### Frontend (`turnero/.env.example`)
-```bash
-# API Base URL (Acceso desde el Servidor de Next.js)
-NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
-```
+#### Configuración del Frontend (`turnero`):
+- **API URL:** URL base pública del backend para el consumo de servicios REST.
 
 ---
 

@@ -10,36 +10,26 @@ Este documento define la arquitectura técnica del frontend, la estrategia de re
 
 El diseño del frontend se basa en las especificaciones cromáticas del documento de [identidad-visual.md](identidad-visual.md). Se utilizará **Tailwind CSS** para la implementación ágil de estilos, utilizando los siguientes tokens configurados:
 
-### A. Paleta de Colores (config. de Tailwind)
-Para mantener las proporciones visuales sugeridas por el cliente (60% fondos, 30% interacción, 5% textos, 5% destaque en naranja), se registrarán los siguientes alias en la configuración:
+### A. Paleta de Colores y Tokens de Diseño
+Para mantener las proporciones visuales sugeridas por el cliente (60% fondos, 30% interacción, 5% textos, 5% destaque en naranja), se definen los siguientes tokens de color que deben ser registrados en la configuración del framework CSS:
 
-```javascript
-// tailwind.config.js
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        brand: {
-          orange: '#FE8F00',     // 30% - Interacción, Header, Botones, Links
-          bgLight: '#F0F2F5',    // 60% - Fondos generales, Tarjetas, Formularios
-          textDark: '#333333',   // 5%  - Texto primario, Iconos en fondo claro
-          white: '#FFFFFF',      // 5%  - Texto/Iconos sobre brand.orange
-          grayDark: '#999999',   // Soporte - Texto secundario
-          grayMedium: '#B6B7B8', // Soporte - Bordes y estados inactivos
-          grayLight: '#D3D4D6'   // Soporte - Divisores y fondos secundarios
-        },
-        estado: {
-          reservado: '#2563EB',  // Azul - Turno reservado
-          completo: '#16A34A',   // Verde - Trámite satisfactorio
-          incompleto: '#D97706', // Amarillo/Ámbar - Falta documentación
-          ausente: '#DC2626',    // Rojo - Inasistencia
-          cancelado: '#4B5563'   // Gris - Turno cancelado/liberado
-        }
-      }
-    }
-  }
-}
-```
+| Token | Valor Hex | Propósito / Uso |
+|---|---|---|
+| **`brand.orange`** | `#FE8F00` | 30% - Interacción, cabeceras, botones principales, enlaces activos. |
+| **`brand.bgLight`** | `#F0F2F5` | 60% - Fondos generales de páginas, tarjetas de información, formularios. |
+| **`brand.textDark`** | `#333333` | 5% - Texto principal y de lectura, iconos sobre fondos claros. |
+| **`brand.white`** | `#FFFFFF` | 5% - Texto e iconos en contraste sobre el color naranja principal. |
+| **`brand.grayDark`** | `#999999` | Soporte - Texto secundario o leyendas aclaratorias. |
+| **`brand.grayMedium`** | `#B6B7B8` | Soporte - Bordes de componentes y estados deshabilitados. |
+| **`brand.grayLight`** | `#D3D4D6` | Soporte - Líneas divisorias y fondos secundarios suaves. |
+
+#### Colores de Estado del Turno:
+- **`estado.reservado`**: `#2563EB` (Azul - Indica un turno reservado y activo).
+- **`estado.completo`**: `#16A34A` (Verde - Indica un trámite finalizado de forma satisfactoria).
+- **`estado.incompleto`**: `#D97706` (Amarillo/Ámbar - Asistencia registrada pero faltó documentación).
+- **`estado.ausente`**: `#DC2626` (Rojo - Ciudadano no asistió al turno).
+- **`estado.cancelado`**: `#4B5563` (Gris - Turno cancelado o liberado por el sistema/usuario).
+
 
 ### B. Tipografía
 Se importará la fuente **Montserrat** mediante `next/font/google`.

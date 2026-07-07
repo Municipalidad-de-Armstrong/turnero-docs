@@ -69,14 +69,79 @@ Cada fase de la hoja de ruta debe producir artefactos legibles y procesables de 
 - **Tareas Asíncronas:** Dado el requerimiento de notificaciones inmediatas por WhatsApp y Email, se requiere una arquitectura basada en **Background Tasks de FastAPI** (para simplicidad inicial) o **Celery con Redis** si el volumen de concurrencia lo amerita. *Queda estrictamente prohibido bloquear el hilo de ejecución principal de la API enviando un WhatsApp o un correo electrónico.*
 
 ### Frontend (`turnero`)
-- **Framework:** **Next.js** (versión actual de mercado con App Router y Server Actions si aplica).
+- **Framework:** **Next.js** (App Router).
 - **Lenguaje:** **TypeScript** con tipado estricto (`strict: true` en `tsconfig.json`).
-- **Estilos:** **Vanilla CSS** o **Tailwind CSS** (a confirmar en la Fase 4).
+- **Estilos:** **Tailwind CSS** (estandarizado en la Fase 4 con Design Tokens).
 
 ### Seguridad
-- **Autenticación:** JWT (JSON Web Tokens) transmitidos preferentemente mediante cookies HTTP-only en el frontend para mitigar ataques XSS.
+- **Autenticación:** JWT (JSON Web Tokens) transmitidos mediante cookies HTTP-only (`session_token`) en el frontend para mitigar ataques XSS.
 - **Contraseñas:** Encriptación irreversible en base de datos mediante **bcrypt** (con salt robusto).
 - **Autorización:** RBAC (Role-Based Access Control) validado tanto en los endpoints de la API (Backend) como en los middlewares de Next.js (Frontend).
+
+### Diagrama de Arquitectura de Bloques
+El siguiente diagrama describe la topología de la aplicación e integraciones:
+
+```mermaid
+graph TD
+    subgraph Cliente [Capa Cliente / Frontend]
+        NextJS["Frontend (Next.js App Router)"]
+    end
+
+    subgraph Servidor [Capa Servidor Backend]
+        FastAPI["Backend (FastAPI)"]
+        BackgroundTasks["Background Tasks / Workers"]
+    end
+
+    subgraph BaseDatos [Capa de Persistencia]
+        PostgreSQL[("Base de Datos (PostgreSQL)")]
+    end
+
+    subgraph ServiciosExternos [Servicios Externos]
+        SMTP["Servidor de Correo (SMTP)"]
+        WhatsAppAPI["API de WhatsApp (Municipio)"]
+    end
+
+    NextJS <-->|HTTP REST / Cookies HttpOnly JWT| FastAPI
+    FastAPI <-->|SQLAlchemy ORM / Alembic| PostgreSQL
+    FastAPI -->|Encola Tareas Asíncronas| BackgroundTasks
+    BackgroundTasks -->|Envío de Planillas y Confirmaciones| SMTP
+    BackgroundTasks -->|Alertas de Vencimiento y Turnos| WhatsAppAPI
+```
+
+### Variables de Entorno Requeridas (Estandarización para Agentes de IA)
+Para asegurar que el desarrollo por IA mantenga coherencia en las configuraciones locales y de entorno, se definen las siguientes variables obligatorias:
+
+#### Backend (`turnero_api/.env.example`)
+```bash
+# Servidor y Entorno
+PORT=8000
+ENVIRONMENT=development # development | production
+
+# Base de Datos
+DATABASE_URL=postgresql://user:password@localhost:5432/turnero_db
+
+# Seguridad
+JWT_SECRET=super_secret_token_change_in_production
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=1440 # 24 horas
+
+# Notificaciones - SMTP (Email)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=notificaciones@armstrong.gov.ar
+SMTP_PASSWORD=contrasenia_aplicacion
+SMTP_FROM=notificaciones@armstrong.gov.ar
+
+# Notificaciones - WhatsApp API
+WHATSAPP_API_URL=https://api.whatsapp.armstrong.gov.ar/v1/send
+WHATSAPP_API_TOKEN=token_oficial_de_la_municipalidad
+```
+
+#### Frontend (`turnero/.env.example`)
+```bash
+# API Base URL (Acceso desde el Servidor de Next.js)
+NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+```
 
 ---
 
@@ -89,8 +154,12 @@ Todo código desarrollado en el backend o frontend debe cumplir con las siguient
 - Mantener los comentarios descriptivos que aporten contexto ("el porqué", no "el qué").
 
 ### Calidad de Pruebas:
-- Cada endpoint crítico (reserva, cancellation, autenticación) debe contar con tests de integración automatizados.
-- Cobertura mínima esperada: **80%** en la lógica de negocio central (servicios y helpers de validación).
+- **Backend (`turnero_api`):**
+  - Cada endpoint crítico (reserva, cancelación, autenticación) debe contar con tests de integración automatizados utilizando `pytest` y `httpx.AsyncClient`.
+  - Cobertura mínima esperada: **80%** en la lógica de negocio central (servicios y helpers de validación).
+- **Frontend (`turnero`):**
+  - Pruebas unitarias de componentes de negocio (como `CartVariantes` y `GrillaSlots`) utilizando **Jest** y **React Testing Library**.
+  - Pruebas de extremo a extremo (E2E) para flujos críticos (Registro, Reserva de Turnos y Cancelación) utilizando **Playwright** o **Cypress**.
 
 ### Criterios de Aceptación Ejecutables (Gherkin):
-Las historias de usuario complejas descritas en los requerimientos refinados deben acompañarse de criterios de aceptación estructurados en formato `Given / When / Then` para facilitar el desarrollo de pruebas de comportamiento automatizadas.
+Las historias de usuario complejas descritas en los requerimientos refinados deben acompañarse de criterios de aceptación estructurados en formato `Given / When / Then` para facilitar el desarrollo de pruebas de comportamiento automatizadas (BDD).

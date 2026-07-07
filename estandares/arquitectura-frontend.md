@@ -1,13 +1,14 @@
-# Estándar de Frontend y Experiencia de Usuario (UI/UX)
-**Sistema:** Turnero — Municipalidad de Armstrong
+# Estándar de Arquitectura y Diseño Frontend
+**Proyecto:** Turnero — Municipalidad de Armstrong  
+**Tipo de Documento:** Estándar Técnico de Desarrollo  
 
-Este documento define la arquitectura del frontend, el mapa de navegación, las estrategias de renderizado en Next.js, la jerarquía de componentes y el sistema de diseño visual (basado en la identidad del cliente) que debe seguir estrictamente el equipo de desarrollo.
+Este documento define la arquitectura técnica del frontend, la estrategia de renderizado de Next.js, y el sistema de diseño visual (tokens y componentes) que rige el desarrollo de la interfaz de usuario.
 
 ---
 
 ## 1. Guía de Diseño Visual (Design Tokens)
 
-El diseño del frontend se basa en las especificaciones del documento de [identidad-visual.md](../especificaciones/identidad-visual.md). Se utilizará **Tailwind CSS** para la implementación ágil de estilos, utilizando los siguientes tokens configurados:
+El diseño del frontend se basa en las especificaciones cromáticas del documento de [identidad-visual.md](identidad-visual.md). Se utilizará **Tailwind CSS** para la implementación ágil de estilos, utilizando los siguientes tokens configurados:
 
 ### A. Paleta de Colores (config. de Tailwind)
 Para mantener las proporciones visuales sugeridas por el cliente (60% fondos, 30% interacción, 5% textos, 5% destaque en naranja), se registrarán los siguientes alias en la configuración:
@@ -56,36 +57,7 @@ Se integrará **Material Symbols & Icons** de Google con el estilo **Rounded** c
 
 ---
 
-## 2. Mapa del Sitio y Rutas por Rol
-
-El control de accesos se gestiona mediante un **Middleware de Next.js** basado en el rol (`CIUDADANO`, `ADMINISTRATIVO`, `ADMINISTRADOR`) del token JWT almacenado en cookies `HttpOnly`.
-
-### A. Rutas Públicas (Sin sesión requerida)
-* **`/`** (Landing Page): Presentación del servicio, horarios generales de atención y acceso a iniciar trámites.
-* **`/auth/login`**: Formulario de inicio de sesión único para todos los roles.
-* **`/auth/register`**: Formulario de registro para nuevos ciudadanos. Requiere DNI, email y teléfono.
-* **`/auth/recuperar-password`**: Solicitud de enlace de recuperación.
-* **`/auth/resetear-password`**: Aplicación de la nueva contraseña mediante token.
-
-### B. Rutas del Ciudadano (Acceso: `CIUDADANO`)
-* **`/turnos`**: Vista principal ("Mi Panel"). Muestra los próximos turnos reservados del ciudadano, el historial de trámites pasados y las alertas de vencimiento de carnet.
-* **`/turnos/reservar`**: Flujo de reserva interactivo en dos pasos (selección de trámite/variantes -> selección de fecha/hora).
-* **`/turnos/perfil`**: Vista de edición de datos de contacto del ciudadano (teléfono e email).
-
-### C. Rutas de Gestión Operativa (Acceso: `ADMINISTRATIVO` o `ADMINISTRADOR`)
-* **`/admin/dashboard`**: Tablero operativo del día. Muestra la cola de turnos del día actual en tiempo real para todas las áreas. Permite filtrar por área/trámite y marcar asistencias/estados.
-* **`/admin/turnos`**: Buscador global de turnos históricos o futuros. Permite la edición, reprogramación o cancelación por parte de los operadores.
-* **`/admin/turnos/nuevo`**: Panel de carga manual de turnos. Incluye la búsqueda rápida de ciudadano por DNI (o su registro rápido *on-the-fly*).
-* **`/admin/tramites`**: Vista de trámites disponibles por área municipal. Configuración de requisitos y variantes de cada trámite.
-* **`/admin/agenda`**: Configuración de los bloques horarios, días hábiles, feriados y capacidad de atención por trámite.
-
-### D. Rutas de Configuración Global (Acceso exclusivo: `ADMINISTRADOR`)
-* **`/admin/configuracion`**: Configuración de variables del sistema (ej: anticipación de cancelación, límite de sobreturnos, días previos de alerta de vencimiento).
-* **`/admin/administrativos`**: Listado de cuentas administrativas. Creación de nuevos operadores y desactivación/eliminación de los mismos.
-
----
-
-## 3. Estrategia de Renderizado (SSR vs CSR vs SSG)
+## 2. Estrategia de Renderizado (SSR vs CSR vs SSG)
 
 Para optimizar los tiempos de carga, mejorar el SEO en la landing page y proveer interactividad en los paneles, se adopta un enfoque híbrido en Next.js (App Router):
 
@@ -99,19 +71,19 @@ Para optimizar los tiempos de carga, mejorar el SEO en la landing page y proveer
 
 ---
 
-## 4. Jerarquía y Estrategia de Componentes
+## 3. Jerarquía y Estrategia de Componentes
 
 Los componentes se organizarán bajo la carpeta `/src/components` del frontend siguiendo un esquema de diseño modular:
 
 ```
 src/
 └── components/
-    ├── ui/                 # Componentes atómicos de UI (genéricos)
+    ├── ui/                 # Componentes atómicos de UI (genéricos y reutilizables)
     │   ├── Button.tsx
     │   ├── Input.tsx
     │   ├── Card.tsx
     │   ├── Badge.tsx       # Muestra el estado del turno con colores brand.estado
-    │   └── Dialog.tsx      # Modal de confirmación
+    │   └── Dialog.tsx      # Modal de confirmación genérico
     └── business/           # Componentes de negocio (acoplados al dominio)
         ├── CartVariantes.tsx       # Selección y acumulación de variantes del ciudadano
         ├── GrillaSlots.tsx         # Renderiza los horarios libres del día

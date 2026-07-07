@@ -2,7 +2,7 @@
 **Municipalidad de Armstrong**
 
 Este documento registra formalmente el uso de la identidad visual del cliente para el proyecto. El archivo PDF original con los assets visuales se encuentra guardado en el repositorio en:
-👉 [identidad-visual.pdf](identidad-visual.pdf)
+👉 [identidad-visual.pdf](../assets/identidad-visual.pdf)
 
 ---
 
@@ -12,7 +12,7 @@ Este documento registra formalmente el uso de la identidad visual del cliente pa
 > **REGLA DE ORO DE IMPLEMENTACIÓN:**
 > Queda **estrictamente prohibido** intentar recrear el logotipo institucional de la Municipalidad de Armstrong mediante código SVG manual, canvas o estilos CSS aproximados en el código del frontend. 
 > 
-> Para cualquier componente de la interfaz (Header, planillas, notificaciones, etc.) se deben utilizar exclusivamente los archivos de imagen del logotipo oficial. Estos deben ser extraídos directamente del documento de identidad visual [identidad-visual.pdf](identidad-visual.pdf) o provistos por el área de comunicación del municipio, y almacenados como recursos estáticos en el frontend (ej. en `public/assets/logo-muni.png`).
+> Para cualquier componente de la interfaz (Header, planillas, notificaciones, etc.) se deben utilizar exclusivamente los archivos de imagen del logotipo oficial. Estos deben ser extraídos directamente del documento de identidad visual [identidad-visual.pdf](../assets/identidad-visual.pdf) o provistos por el área de comunicación del municipio, y almacenados como recursos estáticos en el frontend (ej. en `public/assets/logo-muni.png`).
 
 ### Directrices de Uso del Logotipo:
 * **Versión Principal:** Utilizar para la cabecera y secciones sobre fondo claro.

@@ -44,7 +44,7 @@ Este documento define la secuencia obligatoria de fases de especificación pre-d
 ---
 
 ## Fase 4: Arquitectura Frontend y Experiencia de Usuario (UI/UX)
-> 📄 **Documento de salida:** [frontend-ux-ui.md](../estandares/frontend-ux-ui.md) (Completado)
+> 📄 **Documentos de salida:** [sitemap-rutas.md](../especificaciones/sitemap-rutas.md) y [arquitectura-frontend.md](../estandares/arquitectura-frontend.md) (Completados)
 
 - [x] Definir el mapa de sitio jerárquico y rutas protegidas en Next.js por rol.
 - [x] Estructurar la arquitectura de componentes del frontend y la estrategia de renderizado (SSR vs CSR) para cada página.

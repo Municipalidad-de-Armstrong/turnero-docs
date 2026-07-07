@@ -103,11 +103,28 @@ erDiagram
         text descripcion
         timestamp_tz timestamp
     }
+    NOTIFICACIONES {
+        int id PK
+        uuid usuario_id FK
+        varchar titulo
+        text mensaje
+        boolean leida
+        timestamp_tz created_at
+        timestamp_tz updated_at
+    }
+    CONFIGURACION_GLOBAL {
+        int id PK
+        int anticipacion_cancelacion_horas
+        int aviso_vencimiento_carnet_dias
+        timestamp_tz created_at
+        timestamp_tz updated_at
+    }
 
     ROLES ||--o{ USUARIOS : "posee"
     USUARIOS ||--o{ TURNOS : "agenda"
     USUARIOS ||--o{ CARNETS : "es_titular_de"
     USUARIOS ||--o{ AUDITORIA_ACCIONES : "realiza"
+    USUARIOS ||--o{ NOTIFICACIONES : "recibe"
     AREAS ||--o{ TRAMITES : "gestiona"
     TRAMITES ||--o{ VARIANTES : "ofrece"
     TRAMITES ||--o{ TURNOS : "se_clasifica_en"
@@ -270,6 +287,33 @@ Registro inalterable de auditoría para operaciones críticas del personal munic
 | `accion` | `VARCHAR(100)` | `NOT NULL` | Acción realizada (ej: `CANCELACION_ADMINISTRATIVA`, `CREACION_ADMINISTRATIVO`, `CAMBIO_AGENDA`). |
 | `descripcion` | `TEXT` | `NOT NULL` | Mensaje detallando el cambio y los IDs modificados. |
 | `timestamp` | `TIMESTAMP WITH TIME ZONE` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP` | Registro temporal exacto. |
+
+### 2.11 Tabla `notificaciones`
+Almacena las notificaciones generadas en plataforma para el ciudadano (confirmaciones, cancelaciones, vencimientos, etc.).
+
+| Columna | Tipo SQL | Restricciones | Descripción |
+|---|---|---|---|
+| `id` | `SERIAL` | `PRIMARY KEY` | Identificador único de la notificación. |
+| `usuario_id` | `UUID` | `NOT NULL`, `REFERENCES usuarios(id) ON DELETE CASCADE` | Ciudadano destinatario del aviso. |
+| `titulo` | `VARCHAR(150)` | `NOT NULL` | Título resumen del aviso. |
+| `mensaje` | `TEXT` | `NOT NULL` | Contenido detallado de la notificación. |
+| `leida` | `BOOLEAN` | `NOT NULL`, `DEFAULT FALSE` | Indica si el usuario ya vio la notificación. |
+| `created_at` | `TIMESTAMP WITH TIME ZONE` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP` | Fecha y hora de creación. |
+| `updated_at` | `TIMESTAMP WITH TIME ZONE` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP` | Última actualización. |
+
+*Índices recomendados:*
+- `idx_notificaciones_usuario_leida` en `(usuario_id, leida)` para optimizar la consulta del listado de no leídas del ciudadano.
+
+### 2.12 Tabla `configuracion_global`
+Tabla de registro único para variables de configuración de comportamiento del sistema.
+
+| Columna | Tipo SQL | Restricciones | Descripción |
+|---|---|---|---|
+| `id` | `SERIAL` | `PRIMARY KEY` | Identificador único de la configuración. |
+| `anticipacion_cancelacion_horas` | `INTEGER` | `NOT NULL`, `DEFAULT 24` | Horas mínimas de antelación para que un ciudadano cancele/reprograme. |
+| `aviso_vencimiento_carnet_dias` | `INTEGER` | `NOT NULL`, `DEFAULT 30` | Días de anticipación para avisar sobre el vencimiento del carnet. |
+| `created_at` | `TIMESTAMP WITH TIME ZONE` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP` | Fecha de creación. |
+| `updated_at` | `TIMESTAMP WITH TIME ZONE` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP` | Última actualización. |
 
 ---
 

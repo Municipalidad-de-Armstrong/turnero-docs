@@ -97,3 +97,26 @@ src/
 4. **`PrioritySelector` (Priorización de Sobretornos):**
    - Permite al administrativo asignar las prioridades `ALTA`, `MEDIA` o `BAJA` al cargar un sobreturno.
    - Ordena visualmente la cola de espera de sobreturnos del día.
+
+---
+
+## 4. Estándares de Seguridad Frontend
+
+### 4.1 Configuración de CSP (Content Security Policy)
+Para evitar la inyección de scripts externos o ataques de clickjacking, se debe configurar una cabecera CSP estricta en el servidor web (o a través del middleware de Next.js):
+- **Restricción de Scripts:** Configurar `script-src 'self'` para impedir la ejecución de código Javascript inyectado en línea o cargado desde servidores externos no autorizados.
+- **Conexiones Seguras:** Forzar conexiones a la propia API y a los servicios autorizados (como la API de Meta) utilizando `connect-src 'self'`.
+
+### 4.2 Sanitización en Renderizado Dinámico
+En caso de requerir la inserción directa de HTML dinámico proporcionado por el usuario (por ejemplo, descripciones de trámites editadas por el administrador o notas de propuestas del cliente):
+- **Purificación del DOM:** Queda prohibido inyectar HTML sin antes procesar el texto con una librería de sanitización robusta (como DOMPurify). Esto removerá cualquier etiqueta de script, eventos de carga u otros elementos ejecutables dañinos.
+
+### 4.3 Control de Caché en Rutas Privadas y de Sesión
+Para evitar la exposición no autorizada de datos personales e historiales de turnos en computadoras de uso público o compartido:
+- **Directivas de Caché:** Las páginas dinámicas del ciudadano (`/turnos`) y del panel administrativo (`/admin/*`) deben responder inyectando obligatoriamente la cabecera HTTP `Cache-Control: no-store, no-cache, must-revalidate, max-age=0`.
+- **Comportamiento:** Esto le prohíbe al navegador del cliente almacenar copias de seguridad de las vistas en el disco duro, de manera que el uso del botón "Atrás" después de cerrar sesión no exponga la información privada.
+
+### 4.4 Guardias de Enrutado en Servidor y Cliente
+- **Protección del Lado del Servidor:** La validación de roles y permisos de acceso para las secciones administrativas se debe ejecutar en Next.js del lado del servidor (SSR) antes de renderizar la página y enviar datos al cliente.
+- **Principio de Desconfianza del Cliente:** El estado local del frontend (Contexto de React o almacén de datos local) no debe considerarse como prueba de autenticación de permisos; cualquier acción de escritura invocará un endpoint de API que validará la cookie JWT de forma independiente en el servidor.
+

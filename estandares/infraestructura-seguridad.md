@@ -183,3 +183,32 @@ Para limitar la exposición innecesaria de información personal en entornos ope
 Para garantizar la minimización de datos personales almacenados en el tiempo:
 - **Anonimización Periódica:** Se ejecutará un proceso automático periódico que analice todos los turnos que hayan sido finalizados, ausentes o cancelados con una antigüedad mayor a dos años.
 - **Procedimiento de Anonimización:** Los datos sensibles del ciudadano asociados al turno se sobrescribirán con valores nulos o hashes irreversibles. Esto elimina la vinculación física con la persona, impidiendo su reidentificación, pero conserva la información agregada (como el trámite, área y fecha) necesaria para la elaboración de estadísticas municipales.
+
+---
+
+## 5. Controles Adicionales de Seguridad Backend
+
+### 5.1 Restricciones de CORS (Cross-Origin Resource Sharing)
+Para mitigar el consumo no autorizado de la API por parte de aplicaciones externas, el servidor web y la API de turnos deben implementar políticas estrictas de CORS:
+- **Orígenes Permitidos:** Se restringirá el acceso exclusivamente al nombre de dominio oficial de la municipalidad. Queda prohibido el uso del comodín de acceso general en entornos de producción.
+- **Métodos Permitidos:** Solo se habilitarán los métodos HTTP estrictamente requeridos por la aplicación (GET, POST, DELETE y OPTIONS para las solicitudes previas).
+
+### 5.2 Validación Estricta de Esquemas de Entrada y Tipos
+Para prevenir vulnerabilidades derivadas del ingreso de datos maliciosos o malformados, todos los datos entrantes del cliente deben pasar por validaciones obligatorias:
+- **Modelos de Validación:** Todos los endpoints de la API deben forzar la validación de tipos mediante modelos de datos definidos en el código del servidor (por ejemplo, Pydantic).
+- **Límites de Longitud y Expresiones Regulares:** Se deben configurar límites de caracteres máximos y mínimos para nombres, DNI, correos y comentarios. Los campos críticos como correos electrónicos o números telefónicos deben validarse mediante expresiones regulares estrictas antes de procesarse.
+
+### 5.3 Sistema de Revocación e Invalidación de Sesiones (JWT Blacklist)
+Debido a la naturaleza descentralizada de los tokens JWT, se requiere un mecanismo para anular de inmediato la sesión de un usuario (por ejemplo, cuando realiza un cierre de sesión voluntario o cuando el administrador deshabilita una cuenta municipal):
+- **Almacenamiento de Tokens Revocados:** Al cerrar sesión o bloquear una cuenta, el token de sesión correspondiente debe guardarse en una base de datos en memoria de acceso ultra rápido (por ejemplo, Redis).
+- **Control de Acceso:** En cada petición autenticada, el middleware del servidor verificará la presencia del token en la lista de exclusión. Si el token está en la lista, se rechazará el acceso inmediatamente.
+- **Expiración de la Lista Negra:** Los tokens en la lista negra tendrán un tiempo de vida (TTL) equivalente al tiempo restante de su validez original para liberar memoria automáticamente.
+
+### 5.4 Protocolos Seguros y Autenticación con Proveedores Externos
+- **Servicio de Correo (SMTP):** Las comunicaciones con el servidor de correo corporativo deben realizarse obligatoriamente mediante protocolos de red cifrados (STARTTLS o SMTPS), garantizando que las credenciales de envío nunca viajen en texto claro por la red.
+- **API de Meta para WhatsApp:** El endpoint del webhook de recepción de mensajes de WhatsApp debe validar obligatoriamente la firma digital del encabezado (SHA256 utilizando la clave secreta del webhook de Meta) para comprobar la procedencia auténtica de cada notificación.
+
+### 5.5 Principio de Privilegios Mínimos en la Base de Datos
+- **Restricción de Accesos:** La cuenta de usuario del motor de base de datos relacional utilizada por la API del turnero no debe poseer privilegios de superusuario ni permisos de administración estructural.
+- **Acceso Acotado:** Los permisos otorgados deben limitarse exclusivamente a operaciones de lectura, escritura y modificación de registros sobre las tablas del turnero municipal, bloqueando cualquier acción de modificación de estructuras o accesos a otros esquemas de la administración.
+

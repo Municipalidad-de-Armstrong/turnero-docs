@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - master
-      - feature/portal-cliente-feedback # Let's include their current branch so they can test it!
+      - dev
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:

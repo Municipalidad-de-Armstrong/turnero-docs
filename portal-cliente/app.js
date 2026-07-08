@@ -400,22 +400,6 @@ window.openNewRequirementModal = function() {
 
 // 4. API Backend Integración (Save & Load) y Respaldo Local (localStorage)
 
-// Configuración de GitHub (Se auto-detecta si está en GitHub Pages, de lo contrario usa los valores por defecto)
-const GITHUB_CONFIG = {
-  owner: 'Municipalidad-de-Armstrong', // Reemplazar con tu usuario de GitHub si falla la auto-detección
-  repo: 'turnero-docs', // Reemplazar con tu repositorio de GitHub si falla la auto-detección
-  label: 'propuesta'
-};
-
-// Intentar auto-detectar desde la URL de GitHub Pages
-if (window.location.hostname.endsWith('.github.io')) {
-  const parts = window.location.pathname.split('/');
-  if (parts.length > 1 && parts[1]) {
-    GITHUB_CONFIG.owner = window.location.hostname.split('.')[0];
-    GITHUB_CONFIG.repo = parts[1];
-  }
-}
-
 function getProposalsFromLocalStorage() {
   try {
     return JSON.parse(localStorage.getItem('portal_feedback') || '[]');
@@ -443,78 +427,6 @@ function deleteProposalFromLocalStorage(id) {
   localStorage.setItem('portal_feedback', JSON.stringify(filtered));
 }
 
-// Función auxiliar para parsear propuestas desde los Issues de GitHub
-function parseProposalFromIssue(issue) {
-  try {
-    const match = issue.body.match(/<!-- DATA:\s*([\s\S]*?)\s*-->/);
-    if (match && match[1]) {
-      const data = JSON.parse(match[1]);
-      return {
-        id: 'github_' + issue.number,
-        requirementId: data.requirementId || 'NUEVO',
-        requirementTitle: data.requirementTitle || issue.title,
-        type: data.type || 'cambio',
-        author: data.author || issue.user.login,
-        comment: data.comment || '',
-        proposedText: data.proposedText || '',
-        timestamp: data.timestamp || issue.created_at,
-        url: issue.html_url
-      };
-    }
-  } catch (e) {
-    console.warn('No se pudo parsear metadata del issue #' + issue.number, e);
-  }
-  
-  // Fallback si no hay metadata formateada
-  return {
-    id: 'github_' + issue.number,
-    requirementId: 'GENERAL',
-    requirementTitle: issue.title,
-    type: 'cambio',
-    author: issue.user.login,
-    comment: issue.body,
-    proposedText: '',
-    timestamp: issue.created_at,
-    url: issue.html_url
-  };
-}
-
-// Función para abrir la ventana de GitHub pre-cargando la propuesta
-function openGitHubIssue(prop) {
-  const issueTitle = `[Propuesta] ${prop.requirementTitle} - Por ${prop.author}`;
-  const issueBody = `### Propuesta de Cambio / Comentario del Cliente
-
-- **Requerimiento:** ${prop.requirementTitle} (${prop.requirementId})
-- **Autor:** ${prop.author}
-- **Tipo de Propuesta:** ${prop.type === 'nuevo' ? 'Nuevo Requerimiento' : 'Modificación'}
-
-#### Comentario / Razón del cambio:
-${prop.comment}
-
-${prop.proposedText ? `#### Texto Propuesto:
-\`\`\`
-${prop.proposedText}
-\`\`\`` : ''}
-
----
-*Esta propuesta fue enviada desde el Portal de Clientes de la Municipalidad.*
-
-<!-- DATA:
-{
-  "requirementId": "${prop.requirementId}",
-  "requirementTitle": "${prop.requirementTitle.replace(/"/g, '\\"')}",
-  "type": "${prop.type}",
-  "author": "${prop.author.replace(/"/g, '\\"')}",
-  "comment": "${prop.comment.replace(/"/g, '\\"').replace(/\n/g, '\\n')}",
-  "proposedText": "${prop.proposedText.replace(/"/g, '\\"').replace(/\n/g, '\\n')}",
-  "timestamp": "${prop.timestamp}"
-}
--->`;
-
-  const githubUrl = `https://github.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}&labels=${GITHUB_CONFIG.label}`;
-  window.open(githubUrl, '_blank');
-}
-
 async function submitProposal(callback) {
   const author = document.getElementById('author-field').value.trim() || 'Cliente';
   const type = document.getElementById('type-field').value;
@@ -537,55 +449,22 @@ async function submitProposal(callback) {
     timestamp: new Date().toISOString()
   };
 
-  // Guardar primero localmente
+  // Guardar localmente
   saveProposalToLocalStorage(newProp);
-  showToast('Propuesta guardada localmente.');
-  
-  // Ofrecer publicar en GitHub
-  if (confirm('Tu propuesta se guardó localmente en el navegador. ¿Deseas publicarla oficialmente en GitHub ahora?')) {
-    openGitHubIssue(newProp);
-  }
+  showToast('Propuesta guardada.');
 
   callback();
   loadProposals();
 }
 
 async function loadProposals() {
-  let serverProps = [];
-  
-  if (GITHUB_CONFIG.owner && GITHUB_CONFIG.repo) {
-    try {
-      const response = await fetch(`https://api.github.io/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/issues?labels=${GITHUB_CONFIG.label}&state=all`);
-      if (response.ok) {
-        const issues = await response.json();
-        serverProps = issues.map(parseProposalFromIssue);
-      } else {
-        console.warn('No se pudieron obtener propuestas de GitHub (Status: ' + response.status + ')');
-      }
-    } catch (error) {
-      console.warn('Error de red al consultar GitHub Issues, operando en modo local.', error);
-    }
-  }
-
   // Obtener locales
   const localProps = getProposalsFromLocalStorage();
 
-  // Combinar únicos por ID o por contenido (evita duplicar si ya se subió a GitHub)
-  const allProps = [...serverProps];
-  localProps.forEach(lp => {
-    const isAlreadyUploaded = allProps.some(sp => 
-      sp.id === lp.id || 
-      (sp.timestamp === lp.timestamp && sp.author === lp.author)
-    );
-    if (!isAlreadyUploaded) {
-      allProps.push(lp);
-    }
-  });
-
   // Ordenar por fecha descendiente
-  allProps.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  proposalsList = allProps;
-  renderProposals(allProps);
+  localProps.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  proposalsList = localProps;
+  renderProposals(localProps);
 }
 
 function renderProposals(proposals) {
@@ -615,22 +494,11 @@ function renderProposals(proposals) {
     let typeLabel = prop.type === 'nuevo' ? 'Nuevo Requerimiento' : 'Modificación';
     let typeClass = prop.type === 'nuevo' ? 'badge-orange' : 'badge-neutral';
     
-    let actionsHtml = '';
-    if (prop.id.startsWith('github_')) {
-      actionsHtml = `
-        <a href="${prop.url}" target="_blank" class="btn btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; background-color: #24292e; border-color: #24292e;">
-          Ver en GitHub ↗
-        </a>
-      `;
-    } else {
-      actionsHtml = `
-        <span class="badge badge-neutral" style="align-self: center;">Solo local</span>
-        <div style="display: flex; gap: 0.5rem;">
-          <button class="btn btn-danger" onclick="deleteProposal('${prop.id}')">Eliminar</button>
-          <button class="btn btn-primary" onclick="publishLocalProposal('${prop.id}')">Publicar en GitHub</button>
-        </div>
-      `;
-    }
+    const actionsHtml = `
+      <div style="display: flex; gap: 0.5rem;">
+        <button class="btn btn-danger" onclick="deleteProposal('${prop.id}')">Eliminar</button>
+      </div>
+    `;
 
     item.innerHTML = `
       <div class="proposal-header">
@@ -668,16 +536,6 @@ window.deleteProposal = async function(id) {
   deleteProposalFromLocalStorage(id);
   showToast('Propuesta local eliminada.');
   loadProposals();
-};
-
-window.publishLocalProposal = function(id) {
-  const props = getProposalsFromLocalStorage();
-  const prop = props.find(p => p.id === id);
-  if (prop) {
-    openGitHubIssue(prop);
-  } else {
-    showToast('No se encontró la propuesta local.');
-  }
 };
 
 window.exportProposalsMarkdown = function() {

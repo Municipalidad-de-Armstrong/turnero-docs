@@ -402,8 +402,8 @@ window.openNewRequirementModal = function() {
 
 // Configuración de GitHub (Se auto-detecta si está en GitHub Pages, de lo contrario usa los valores por defecto)
 const GITHUB_CONFIG = {
-  owner: 'pablocontreras', // Reemplazar con tu usuario de GitHub si falla la auto-detección
-  repo: 'Municipalidad-de-Armstrong', // Reemplazar con tu repositorio de GitHub si falla la auto-detección
+  owner: 'Municipalidad-de-Armstrong', // Reemplazar con tu usuario de GitHub si falla la auto-detección
+  repo: 'turnero-docs', // Reemplazar con tu repositorio de GitHub si falla la auto-detección
   label: 'propuesta'
 };
 

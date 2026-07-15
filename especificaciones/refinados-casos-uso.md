@@ -27,7 +27,7 @@ Usuario externo que se registra y gestiona sus turnos por una interfaz amigable.
 | Primer turno disponible | `USU-07` | Opción rápida para tomar el primer turno disponible. |
 | Recibir notificaciones | `USU-08` | Cambios notificados en plataforma, **email** y **WhatsApp**. |
 | Descargar planilla | `USU-09` | Link de descarga de la planilla del trámite; además enviada por email y WhatsApp. |
-| Aviso de vencimiento de carnet | `USU-10` | Notificación cuando el carnet está por vencer. |
+| [OBSOLETO] Aviso de vencimiento | `USU-10` | Eliminado por el cliente, no se envían notificaciones. |
 | Ver sus turnos y sobreturnos | `USU-11` | Sección con turnos asignados y sobreturnos. |
 
 **No puede:** ver turnos ajenos, gestionar agendas ni acceder al panel administrativo.
@@ -95,8 +95,8 @@ Convención: **HU-XX** · *Como `<actor>`, quiero `<acción>` para `<valor>`.* S
   - CA: libera cupo; turno → **Cancelado**; notificación en plataforma, email y WhatsApp.
 - **HU-12** `USU-11` — *Como Ciudadano, quiero ver mis turnos y sobreturnos.*
   - CA: sección con próximos turnos, sobreturnos e historial.
-- **HU-13** `USU-10` — *Como Ciudadano, quiero ser avisado cuando mi carnet esté por vencer.*
-  - CA: el sistema genera una entidad "Carnet" local asociada al ciudadano cuando su turno de un trámite habilitado (`emite_carnet = true`) se marca como completo. Un proceso en segundo plano monitorea los vencimientos y notifica al ciudadano (plataforma/email/WhatsApp) con 30 días de anticipación (parámetro configurable a nivel sistema).
+- **HU-13** `USU-10` — *[OBSOLETA] Como Ciudadano, quiero ser avisado cuando mi carnet esté por vencer.*
+  - CA: **Requerimiento dado de baja por el cliente.** No se realiza seguimiento automático de alertas de vencimiento ni se envían notificaciones por ningún canal.
 
 ### 2.3 Administrativo — Gestión operativa
 
@@ -109,7 +109,16 @@ Convención: **HU-XX** · *Como `<actor>`, quiero `<acción>` para `<valor>`.* S
 - **HU-19** `ADT-08` — *Como Administrativo, quiero cargar sobreturnos para un día específico, ordenados por prioridad.*
   - CA: turno extra fuera de la agenda regular; marcado `es_sobturno`; ordenado por prioridad asignada manualmente (Alta, Media, Baja) y sub-ordenado cronológicamente. Límite diario de sobreturnos configurable por trámite/área (por defecto 5, permitiendo deshabilitar/ilimitado).
 - **HU-20** `ADT-09` — *Como Administrativo, quiero cerrar un turno marcándolo completo, incompleto o ausente.*
-  - CA: al finalizar el turno marca **"completo"** (trámite satisfactorio), **"incompleto"** (asistió pero faltó documentación u otra razón) o **"ausente"** (no asistió). Si el trámite genera carnet, al marcar "completo" el administrativo ingresa la fecha de vencimiento para registrar el Carnet localmente.
+  - CA: al finalizar el turno marca **"completo"** (trámite satisfactorio), **"incompleto"** (asistió pero faltó documentación u otra razón) o **"ausente"** (no asistió). Si el trámite genera carnet, al marcar "completo" el administrativo ingresa la fecha de vencimiento para registrar el Carnet localmente de forma histórica (sin disparar alertas automáticas de vencimiento).
+
+- **HU-25** `USU-03` — *Como Ciudadano, quiero visualizar los requerimientos previos, descargar documentos descargables y acceder a enlaces útiles de un trámite antes de mi turno.*
+  - CA: En el detalle del turno en plataforma se exponen: los requerimientos previos en formato Markdown, la lista de enlaces útiles con hipervínculos externos, y la lista de documentos adicionales con opción de descarga directa de archivos físicos almacenados en el servidor.
+- **HU-26** `ADT-06` — *Como Administrativo, quiero gestionar los requerimientos previos, subir documentos descargables y configurar enlaces útiles para cada trámite.*
+  - CA: El panel administrativo permite editar el texto enriquecido de requerimientos previos por trámite, subir archivos físicos para que se almacenen localmente y asociar enlaces externos con un nombre descriptivo y URL. Todos estos recursos se configuran de forma global a nivel de Trámite.
+- **HU-27** — *Como Ciudadano no autenticado, quiero reportar una usurpación de DNI si el sistema me indica que mi DNI ya se encuentra en uso.*
+  - CA: Si durante el registro se detecta que el DNI ya existe, se muestra un botón/enlace de "Reportar usurpación". Abre un formulario que solicita Nombre, Apellido, Email, Teléfono (del denunciante), DNI en conflicto y un comentario explicativo. Se guarda en estado PENDIENTE.
+- **HU-28** — *Como Administrativo, quiero gestionar los reportes de usurpación de DNI.*
+  - CA: El panel del administrativo incluye una vista de "Reportes de Identidad" que lista los reportes PENDIENTES. El administrativo puede cambiar el estado a EN_PROCESO, RESUELTO o RECHAZADO agregando un comentario de resolución, además de poder acceder directamente al perfil de la cuenta "usurpadora" asociada para desactivarla o suspenderla.
 
 ### 2.4 Administrador — Administración global
 
@@ -133,14 +142,14 @@ Convención: **HU-XX** · *Como `<actor>`, quiero `<acción>` para `<valor>`.* S
 5. Ciudadano confirma vía enlace (token de un solo uso).
 6. Cuenta pasa a *activa*; puede iniciar sesión y reservar.
 
-**Alternativos:** DNI/email existente → se ofrece recuperación; token expirado → reenvío.
+**Alternativos:** DNI/email existente → se ofrece recuperación. Si el DNI ya está en uso, se ofrece la opción "Reportar usurpación de DNI" para enviar una denuncia de identidad no autenticada al administrativo; token expirado → reenvío.
 
 ### 3.2 Reserva de turno `USU-01` `USU-03..09`
 
 **Actor:** Ciudadano · **Precondición:** sesión iniciada, cuenta activa.
 
 1. Ciudadano elige **tipo de trámite** y luego **variante(s)**; puede seleccionar **más de una variante** (`USU-04`). El sistema calcula la duración total del turno sumando la duración de todas las variantes seleccionadas para agendar un bloque continuo único de tiempo.
-2. Sistema muestra documentación requerida del trámite (`ADT-06`) y la disponibilidad real (`USU-06`).
+2. Sistema muestra documentación requerida, los requerimientos previos del trámite, los enlaces útiles asociados, los documentos descargables subidos para dicho trámite y la disponibilidad real (`USU-06`).
 3. Ciudadano elige fecha/hora (`USU-05`) **o** usa **"primer turno disponible"** (`USU-07`).
 4. **Sistema valida disponibilidad** con bloqueo contra doble reserva (concurrencia).
 5. Turno creado en estado **Reservado** (fecha, hora, área, trámite, variante(s), ciudadano).
@@ -183,7 +192,7 @@ Convención: **HU-XX** · *Como `<actor>`, quiero `<acción>` para `<valor>`.* S
 
 1. Administrativo atiende al ciudadano y, al finalizar, registra el resultado.
 2. Marca el turno como **"completo"** (trámite satisfactorio), **"incompleto"** (asistió pero no pudo completar) o **"ausente"** (no asistió al turno).
-3. Si el turno es "completo" y el trámite genera carnet, el Administrativo ingresa la fecha de vencimiento. El sistema genera el registro local de "Carnet" asociado al Ciudadano, disparando el proceso de seguimiento de **vencimiento del carnet** (`USU-10`).
+3. Si el turno es "completo" y el trámite genera carnet, el Administrativo ingresa la fecha de vencimiento. El sistema genera el registro local de "Carnet" asociado al Ciudadano únicamente para control e historial interno del municipio (se desactiva el envío automático de alertas de vencimiento).
 
 ---
 
@@ -194,7 +203,9 @@ Convención: **HU-XX** · *Como `<actor>`, quiero `<acción>` para `<valor>`.* S
 - **Estructura multi-área:** la arquitectura soporta múltiples áreas (ej. Rentas, Tránsito, etc.), y el usuario administrativo tiene acceso global para gestionar todas las áreas del sistema.
 - **Notificaciones:** **siempre** en plataforma + email + **WhatsApp** (`USU-08`). WhatsApp es un requerimiento, no diferido.
 - **Planilla:** descargable y enviada por email y WhatsApp (`USU-09`).
-- **Carnet y Vencimientos:** se almacena una entidad "Carnet" en forma local e independiente vinculada al ciudadano (con su número, fecha de emisión y vencimiento) al momento de marcar como "completo" un turno de un trámite que emite carnet (`emite_carnet = true`). El sistema corre un proceso automático diario que envía notificaciones 30 días antes del vencimiento (configurable por el Administrador).
+- **Carnet y Vencimientos:** se almacena una entidad "Carnet" en forma local e independiente vinculada al ciudadano (con su número, fecha de emisión y vencimiento) al momento de marcar como "completo" un turno de un trámite que emite carnet (`emite_carnet = true`). Se eliminan todas las notificaciones automáticas y alertas por email/WhatsApp del vencimiento, quedando como un registro histórico exclusivo para control administrativo interno del municipio.
+- **Requerimientos, Documentos y Enlaces:** se gestionan globalmente a nivel de Trámite. Los requerimientos previos se escriben en Markdown. Los enlaces externos constan de un título y una URL. Los documentos adjuntos son archivos físicos subidos directamente al backend y descargados por el ciudadano desde el detalle de su turno.
+- **Reportes de Usurpación de DNI:** permite a ciudadanos no autenticados reportar un DNI en uso no autorizado durante el registro. Requiere datos de contacto reales y descripción. El administrativo puede suspender la cuenta del DNI usurpador directamente desde el reporte o marcarlo como resuelto/rechazado tras una verificación presencial u offline.
 - **Sobretornos:** se marcan con `es_sobturno = true` para un día específico. Cuentan con una prioridad asignada manualmente (Alta, Media, Baja) por el administrativo, ordenándose por prioridad y luego por orden de llegada (hora de creación). Existe un límite diario de sobreturnos configurable por trámite/área (por defecto 5, con opción a ilimitado).
 - **Resultado del turno:** los estados posibles para el resultado de un turno atendido/finalizado son: **completo** (trámite satisfactorio), **incompleto** (trámite no satisfactorio o no finalizado tras la asistencia) y **ausente** (el ciudadano no asistió al turno).
 - **Reprogramación y Cancelación:** la cancelación/reprogramación por parte del ciudadano está sujeta a un parámetro de anticipación mínima configurable en el sistema por el Administrador (por defecto 24 horas). La reprogramación opera lógicamente como una cancelación y nueva reserva en una sola transacción.

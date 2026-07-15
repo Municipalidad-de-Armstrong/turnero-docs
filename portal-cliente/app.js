@@ -17,9 +17,10 @@ const REQUIREMENTS_DATA = [
     desc: 'El ciudadano se registra ingresando su DNI, dirección de correo electrónico, número de teléfono celular y una contraseña.',
     userStories: [
       { detail: 'Registro inicial de ciudadanos con validación de datos para evitar cuentas duplicadas.' },
-      { detail: 'Posibilidad de modificar los datos de contacto en cualquier momento.' }
+      { detail: 'Posibilidad de modificar los datos de contacto en cualquier momento.' },
+      { detail: 'Acceder a un mecanismo de reporte de usurpación si mi DNI ya se encuentra registrado por otro usuario.' }
     ],
-    details: 'El sistema verifica que no exista otro usuario con el mismo documento o correo, y envía un mensaje de confirmación para activar la cuenta.'
+    details: 'El sistema verifica que no exista otro usuario con el mismo documento o correo. Si el DNI ya está en uso, se ofrece la opción "Reportar usurpación de DNI" para enviar una denuncia de identidad no autenticada al administrativo.'
   },
   {
     id: 'USU-03',
@@ -27,9 +28,10 @@ const REQUIREMENTS_DATA = [
     title: 'Selección de trámite y variantes',
     desc: 'Menú estructurado donde el usuario elige la categoría general del trámite y luego las opciones particulares correspondientes.',
     userStories: [
-      { detail: 'Seleccionar el trámite deseado y ver los requisitos y documentos que debe presentar en la oficina.' }
+      { detail: 'Seleccionar el trámite deseado y ver los requisitos y documentos que debe presentar en la oficina.' },
+      { detail: 'Visualizar requerimientos previos (formato Markdown), descargar documentos PDF/adjuntos y acceder a enlaces útiles del trámite antes del turno (HU-25).' }
     ],
-    details: 'Al seleccionar las opciones del trámite, se informa al usuario la documentación necesaria para la cita.'
+    details: 'Al seleccionar las opciones del trámite o ver el detalle de la reserva, se informa al usuario la documentación necesaria, requerimientos previos, y se proveen enlaces y documentos descargables.'
   },
   {
     id: 'USU-04',
@@ -94,12 +96,12 @@ const REQUIREMENTS_DATA = [
   {
     id: 'USU-10',
     actor: 'USU',
-    title: 'Avisos de vencimiento de carnet',
-    desc: 'El sistema supervisa las fechas de vencimiento de los documentos emitidos y avisa automáticamente al ciudadano con anticipación.',
+    title: 'Avisos de vencimiento de carnet [OBSOLETO]',
+    desc: 'La sección de envío de alertas automáticas sobre el vencimiento del carnet queda totalmente desactivada por requerimiento del cliente.',
     userStories: [
-      { detail: 'Recibir un recordatorio antes del vencimiento del carnet de conducir para renovarlo a tiempo.' }
+      { detail: 'Histórico de carnet: El ciudadano ya no recibe recordatorios automáticos de vencimiento por correo o WhatsApp (HU-13).' }
     ],
-    details: 'Un proceso automático diario busca los carnets que están a punto de vencer en el plazo configurado y despacha alertas al usuario.'
+    details: 'Requerimiento eliminado. La tabla de carnets se mantiene en la base de datos únicamente para almacenamiento histórico y control administrativo del municipio.'
   },
   {
     id: 'USU-11',
@@ -110,6 +112,16 @@ const REQUIREMENTS_DATA = [
       { detail: 'Visualizar todas las citas y sobreturnos asignados a mi nombre en una sección personal.' }
     ],
     details: 'Permite consultar el estado de cada cita (reservado, completado, cancelado).'
+  },
+  {
+    id: 'USU-12',
+    actor: 'USU',
+    title: 'Reporte de usurpación de DNI',
+    desc: 'Si un ciudadano intenta registrarse y el sistema le indica que su DNI ya está registrado, puede enviar un reporte de usurpación de identidad sin estar autenticado.',
+    userStories: [
+      { detail: 'Reportar usurpación de DNI cuando el sistema me indique que mi documento ya se encuentra registrado (HU-27).' }
+    ],
+    details: 'Abre un formulario solicitando Nombre, Apellido, Email, Teléfono, DNI en conflicto y un comentario justificativo. Se guarda en estado PENDIENTE para revisión del personal.'
   },
   {
     id: 'ADT-01',
@@ -154,12 +166,13 @@ const REQUIREMENTS_DATA = [
   {
     id: 'ADT-06',
     actor: 'ADT',
-    title: 'Configuración de requisitos',
-    desc: 'El personal municipal puede definir y actualizar qué documentos y requisitos son obligatorios para cada tipo de trámite.',
+    title: 'Configuración de requisitos y recursos',
+    desc: 'El personal municipal puede definir y actualizar qué documentos, requisitos previos y enlaces externos son necesarios o de utilidad para cada tipo de trámite.',
     userStories: [
-      { detail: 'Establecer y editar la documentación requerida que los ciudadanos deben presentar.' }
+      { detail: 'Establecer y editar la documentación requerida que los ciudadanos deben presentar.' },
+      { detail: 'Gestionar requerimientos previos (Markdown), subir archivos físicos descargables y configurar enlaces útiles externos asociados a cada trámite (HU-26).' }
     ],
-    details: 'Los requisitos configurados se muestran de inmediato al ciudadano al momento de reservar su cita.'
+    details: 'El panel administrativo permite editar el texto enriquecido de requerimientos previos por trámite, subir archivos físicos para que se almacenen localmente y asociar enlaces externos con un nombre descriptivo y URL.'
   },
   {
     id: 'ADT-07',
@@ -189,17 +202,27 @@ const REQUIREMENTS_DATA = [
     userStories: [
       { detail: 'Marcar el turno como completo, incompleto o ausente según corresponda.' }
     ],
-    details: 'Si el trámite es de entrega de licencias o credenciales, al completarse se registra la fecha de vencimiento para activar los recordatorios automáticos.'
+    details: 'Si el trámite genera carnet, al completarse se registra la fecha de vencimiento únicamente para control e historial interno del municipio, quedando totalmente desactivado el envío automático de alertas de vencimiento.'
+  },
+  {
+    id: 'ADT-10',
+    actor: 'ADT',
+    title: 'Gestión de reportes de usurpación de DNI',
+    desc: 'El panel del administrativo permite auditar e investigar las denuncias de usurpación de DNI realizadas por los ciudadanos en el registro.',
+    userStories: [
+      { detail: 'Visualizar reportes de usurpación de DNI, cambiar su estado (PENDIENTE, EN_PROCESO, RESUELTO, RECHAZADO) e ingresar comentarios de resolución (HU-28).' }
+    ],
+    details: 'Provee una vista de "Reportes de Identidad" con acceso directo a la cuenta usurpadora vinculada para suspenderla o desactivarla de forma inmediata si se constata la irregularidad.'
   },
   {
     id: 'ADM-01',
     actor: 'ADM',
     title: 'Control global del sistema',
-    desc: 'Acceso total para configurar los parámetros generales del sistema, como plazos de cancelación y días de aviso de vencimientos.',
+    desc: 'Acceso total para configurar los parámetros generales del sistema, como los plazos mínimos de cancelación de turnos.',
     userStories: [
       { detail: 'Gestionar la configuración general y reglas del sistema de turnos.' }
     ],
-    details: 'Gobernanza completa de las variables del turnero municipal.'
+    details: 'Gobernanza completa de las variables del turnero municipal, sin incluir alertas de vencimiento automatizadas.'
   },
   {
     id: 'ADM-03',

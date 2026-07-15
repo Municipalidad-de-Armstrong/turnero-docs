@@ -1457,6 +1457,233 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /tramites/{tramite_id}/documentos:
+    get:
+      summary: Obtener los documentos descargables de un trámite
+      description: Retorna la lista de archivos adicionales/formularios oficiales que el ciudadano debe descargar antes de asistir. Endpoint público.
+      operationId: getTramiteDocumentos
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de documentos del trámite.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TramiteDocumentoResponse'
+        '404':
+          description: Trámite no encontrado.
+    post:
+      summary: Subir un documento descargable (formulario) para un trámite
+      description: "Permite al administrativo subir un archivo físico (multipart/form-data) que se guardará en el servidor. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: uploadTramiteDocumento
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - nombre
+                - archivo
+              properties:
+                nombre:
+                  type: string
+                  description: Nombre descriptivo del formulario.
+                  example: "Formulario Declaración Jurada"
+                archivo:
+                  type: string
+                  format: binary
+                  description: El archivo físico a subir (PDF, Word, etc.).
+      responses:
+        '201':
+          description: Archivo subido y asociado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TramiteDocumentoResponse'
+        '400':
+          description: Archivo inválido o supera límite de tamaño.
+        '404':
+          description: Trámite no encontrado.
+
+  /tramites/{tramite_id}/documentos/{documento_id}:
+    delete:
+      summary: Eliminar un documento asociado a un trámite
+      description: "Elimina el documento y borra el archivo físico correspondiente en el servidor. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: deleteTramiteDocumento
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: documento_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Documento eliminado con éxito. No retorna contenido.
+        '404':
+          description: Documento o Trámite no encontrado.
+
+  /tramites/{tramite_id}/enlaces:
+    get:
+      summary: Obtener los enlaces útiles de un trámite
+      description: Retorna la lista de hipervínculos externos asociados al trámite. Endpoint público.
+      operationId: getTramiteEnlaces
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de enlaces del trámite.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TramiteEnlaceResponse'
+        '404':
+          description: Trámite no encontrado.
+    post:
+      summary: Crear y asociar un enlace útil para un trámite
+      description: "Permite al administrativo asociar una dirección web externa con una descripción descriptiva. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: createTramiteEnlace
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TramiteEnlaceCreateRequest'
+      responses:
+        '201':
+          description: Enlace creado y asociado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TramiteEnlaceResponse'
+        '404':
+          description: Trámite no encontrado.
+
+  /tramites/{tramite_id}/enlaces/{enlace_id}:
+    delete:
+      summary: Eliminar un enlace útil asociado a un trámite
+      description: "Elimina la asociación del enlace. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: deleteTramiteEnlace
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: enlace_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Enlace desasociado con éxito. No retorna contenido.
+        '404':
+          description: Enlace o Trámite no encontrado.
+
+  /reportes-usurpacion:
+    post:
+      summary: Crear un reporte de usurpación de DNI
+      description: Permite a un ciudadano no autenticado reportar que su DNI ha sido registrado en el sistema por un tercero sin autorización.
+      operationId: createReporteUsurpacion
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReporteUsurpacionCreateRequest'
+      responses:
+        '201':
+          description: Reporte enviado con éxito. Será evaluado por el personal municipal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReporteUsurpacionResponse'
+        '400':
+          description: Datos inválidos.
+
+  /admin/reportes-usurpacion:
+    get:
+      summary: Listar reportes de usurpación de DNI
+      description: "Obtiene las denuncias de usurpación registradas, ordenadas por fecha de creación. Permite filtrar por estado. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: getReportesUsurpacion
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [PENDIENTE, EN_PROCESO, RESUELTO, RECHAZADO]
+      responses:
+        '200':
+          description: Lista de reportes obtenida con éxito.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReporteUsurpacionResponse'
+        '403':
+          description: Acceso denegado.
+
+  /admin/reportes-usurpacion/{reporte_id}:
+    patch:
+      summary: Gestionar y resolver un reporte de usurpación
+      description: "Permite al administrativo actualizar el estado de una denuncia (ej: a RESUELTO o RECHAZADO) e ingresar un comentario final. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: resolveReporteUsurpacion
+      parameters:
+        - name: reporte_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReporteUsurpacionUpdateRequest'
+      responses:
+        '200':
+          description: Reporte actualizado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReporteUsurpacionResponse'
+        '404':
+          description: Reporte no encontrado.
+
 components:
   securitySchemes:
     session_token:
@@ -1702,6 +1929,12 @@ components:
             - DNI original y copia.
             - Carnet anterior.
             - Examen psicofísico aprobado.
+        requerimientos_previos:
+          type: string
+          nullable: true
+          example: |
+            - Abonar boleta nacional del CENAT (llevar impresa).
+            - Realizar curso vial en el portal web de la provincia.
         emite_carnet:
           type: boolean
           example: true
@@ -1733,6 +1966,10 @@ components:
         documentacion_requerida:
           type: string
           example: "Llevar título del automotor y último comprobante de pago."
+        requerimientos_previos:
+          type: string
+          description: Formato Markdown. Acciones obligatorias previas al turno.
+          example: "Ingresar a www.rentas.gob.ar y obtener liquidación de deuda previa."
         emite_carnet:
           type: boolean
           default: false
@@ -1768,6 +2005,10 @@ components:
         documentacion_requerida:
           type: string
           example: "Requisitos."
+        requerimientos_previos:
+          type: string
+          nullable: true
+          example: "Acciones previas."
         emite_carnet:
           type: boolean
           example: true
@@ -1779,6 +2020,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VarianteResponse'
+        documentos:
+          type: array
+          items:
+            $ref: '#/components/schemas/TramiteDocumentoResponse'
+        enlaces:
+          type: array
+          items:
+            $ref: '#/components/schemas/TramiteEnlaceResponse'
         created_at:
           type: string
           format: date-time
@@ -1796,6 +2045,9 @@ components:
         documentacion_requerida:
           type: string
           example: "Nueva documentación requerida."
+        requerimientos_previos:
+          type: string
+          example: "Nuevos requerimientos previos."
         emite_carnet:
           type: boolean
           example: true
@@ -2269,16 +2521,11 @@ components:
       type: object
       required:
         - anticipacion_cancelacion_horas
-        - aviso_vencimiento_carnet_dias
       properties:
         anticipacion_cancelacion_horas:
           type: integer
           description: Tiempo mínimo antes del turno en el cual un ciudadano puede cancelarlo o reprogramarlo.
           example: 24
-        aviso_vencimiento_carnet_dias:
-          type: integer
-          description: Días previos al vencimiento del carnet en los que se debe disparar la alerta automática.
-          example: 30
 
     GlobalConfigUpdateRequest:
       type: object
@@ -2287,10 +2534,6 @@ components:
           type: integer
           minimum: 1
           example: 24
-        aviso_vencimiento_carnet_dias:
-          type: integer
-          minimum: 1
-          example: 30
 
     AreaUpdateRequest:
       type: object
@@ -2332,4 +2575,166 @@ components:
           type: boolean
           description: Establece el estado de lectura de la notificación.
           example: true
+
+    TramiteDocumentoResponse:
+      type: object
+      required:
+        - id
+        - tramite_id
+        - nombre
+        - ruta_archivo
+        - created_at
+      properties:
+        id:
+          type: integer
+          example: 45
+        tramite_id:
+          type: integer
+          example: 12
+        nombre:
+          type: string
+          example: "Formulario Declaración Jurada"
+        ruta_archivo:
+          type: string
+          example: "/uploads/tramites/12/formulario_dj.pdf"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-07-04T01:21:59Z"
+
+    TramiteEnlaceCreateRequest:
+      type: object
+      required:
+        - descripcion
+        - url
+      properties:
+        descripcion:
+          type: string
+          example: "Consultar multas nacionales"
+        url:
+          type: string
+          format: uri
+          example: "https://multas.cenat.gob.ar"
+
+    TramiteEnlaceResponse:
+      type: object
+      required:
+        - id
+        - tramite_id
+        - descripcion
+        - url
+        - created_at
+      properties:
+        id:
+          type: integer
+          example: 12
+        tramite_id:
+          type: integer
+          example: 12
+        descripcion:
+          type: string
+          example: "Consultar multas nacionales"
+        url:
+          type: string
+          format: uri
+          example: "https://multas.cenat.gob.ar"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-07-04T01:21:59Z"
+
+    ReporteUsurpacionCreateRequest:
+      type: object
+      required:
+        - dni_usurpado
+        - nombre_reportante
+        - apellido_reportante
+        - email_reportante
+        - telefono_reportante
+        - motivo_comentario
+      properties:
+        dni_usurpado:
+          type: string
+          example: "20345678"
+        nombre_reportante:
+          type: string
+          example: "Juan"
+        apellido_reportante:
+          type: string
+          example: "Pérez"
+        email_reportante:
+          type: string
+          format: email
+          example: "juan.perez.real@gmail.com"
+        telefono_reportante:
+          type: string
+          example: "+543471987654"
+        motivo_comentario:
+          type: string
+          example: "Intenté registrarme y figura que mi DNI ya tiene una cuenta activa. Adjunto mis datos para validación."
+
+    ReporteUsurpacionResponse:
+      type: object
+      required:
+        - id
+        - dni_usurpado
+        - nombre_reportante
+        - apellido_reportante
+        - email_reportante
+        - telefono_reportante
+        - motivo_comentario
+        - estado
+        - created_at
+      properties:
+        id:
+          type: integer
+          example: 1
+        dni_usurpado:
+          type: string
+          example: "20345678"
+        nombre_reportante:
+          type: string
+          example: "Juan"
+        apellido_reportante:
+          type: string
+          example: "Pérez"
+        email_reportante:
+          type: string
+          example: "juan.perez.real@gmail.com"
+        telefono_reportante:
+          type: string
+          example: "+543471987654"
+        motivo_comentario:
+          type: string
+          example: "Intenté registrarme y mi DNI figura ocupado."
+        estado:
+          type: string
+          enum: [PENDIENTE, EN_PROCESO, RESUELTO, RECHAZADO]
+          example: "PENDIENTE"
+        resolucion_comentario:
+          type: string
+          nullable: true
+          example: "Se verificó offline y se suspendió la cuenta usurpadora."
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-07-15T12:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2026-07-15T12:00:00Z"
+
+    ReporteUsurpacionUpdateRequest:
+      type: object
+      required:
+        - estado
+      properties:
+        estado:
+          type: string
+          enum: [PENDIENTE, EN_PROCESO, RESUELTO, RECHAZADO]
+          example: "RESUELTO"
+        resolucion_comentario:
+          type: string
+          description: Explicación del administrativo sobre las medidas tomadas.
+          example: "Cuenta usurpadora suspendida. Se liberó el DNI."
 

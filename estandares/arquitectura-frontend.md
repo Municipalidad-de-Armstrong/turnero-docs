@@ -79,7 +79,10 @@ src/
         ├── GrillaSlots.tsx         # Renderiza los horarios libres del día
         ├── BuscadorCiudadano.tsx   # Autocompletado administrativo por DNI/Email
         ├── AtendedorTurno.tsx      # Panel para administrativo para marcar Completo/Incompleto/Ausente
-        └── PrioritySelector.tsx    # Asignación manual de prioridad de sobreturnos
+        ├── PrioritySelector.tsx    # Asignación manual de prioridad de sobreturnos
+        ├── ReporteDniModal.tsx     # Formulario/Modal para reportar usurpación de DNI desde registro
+        ├── RequerimientosTramite.tsx # Muestra los requerimientos previos, enlaces útiles y documentos descargables
+        └── GestorReportesDni.tsx   # Panel administrativo para ver, gestionar y resolver denuncias de DNI
 ```
 
 ### Componentes Clave de Negocio:
@@ -97,6 +100,19 @@ src/
 4. **`PrioritySelector` (Priorización de Sobretornos):**
    - Permite al administrativo asignar las prioridades `ALTA`, `MEDIA` o `BAJA` al cargar un sobreturno.
    - Ordena visualmente la cola de espera de sobreturnos del día.
+5. **`ReporteDniModal` (Denuncia de Usurpación):**
+   - Se activa mediante un enlace de advertencia en el formulario de registro si el DNI ingresado ya existe.
+   - Pide Nombre, Apellido, Email, Teléfono, DNI en conflicto (precargado) y una descripción del caso.
+   - Envía el reporte mediante API pública (`POST /api/v1/reportes-usurpacion`) y notifica al ciudadano que su denuncia fue encolada para revisión.
+6. **`RequerimientosTramite` (Visualización de Requisitos):**
+   - Renderiza dentro de la vista de detalle del turno en la interfaz del ciudadano.
+   - Convierte el texto Markdown de los requerimientos previos a HTML (sanitizado obligatoriamente con `DOMPurify` en cliente).
+   - Renderiza un listado con los hipervínculos externos de enlaces útiles y una sección con los archivos de documentos descargables subidos para dicho trámite.
+7. **`GestorReportesDni` (Consola de Identidad):**
+   - Interfaz en el panel del administrativo para auditar reportes de usurpación de DNI.
+   - Presenta los reportes listados por estado (`PENDIENTE`, `EN_PROCESO`, `RESUELTO`, `RECHAZADO`).
+   - Permite al administrativo ingresar un comentario de resolución y cambiar el estado.
+   - Provee un botón de acceso directo a la ficha del usuario "usurpador" con opción rápida para suspender o desactivar su cuenta de forma inmediata si se constata la irregularidad.
 
 ---
 

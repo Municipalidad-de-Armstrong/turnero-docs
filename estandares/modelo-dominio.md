@@ -41,6 +41,7 @@ erDiagram
         varchar nombre
         text descripcion
         text documentacion_requerida
+        text requerimientos_previos
         boolean emite_carnet
         int limite_sobreturnos_diarios
         timestamp_tz created_at
@@ -52,6 +53,35 @@ erDiagram
         varchar nombre
         text descripcion
         int duracion_minutos
+        timestamp_tz created_at
+        timestamp_tz updated_at
+    }
+    TRAMITES_DOCUMENTOS {
+        int id PK
+        int tramite_id FK
+        varchar nombre
+        varchar ruta_archivo
+        timestamp_tz created_at
+        timestamp_tz updated_at
+    }
+    TRAMITES_ENLACES {
+        int id PK
+        int tramite_id FK
+        varchar descripcion
+        varchar url
+        timestamp_tz created_at
+        timestamp_tz updated_at
+    }
+    REPORTES_USURPACION_DNI {
+        int id PK
+        varchar dni_usurpado
+        varchar nombre_reportante
+        varchar apellido_reportante
+        varchar email_reportante
+        varchar telefono_reportante
+        text motivo_comentario
+        varchar estado
+        text resolucion_comentario
         timestamp_tz created_at
         timestamp_tz updated_at
     }
@@ -115,7 +145,6 @@ erDiagram
     CONFIGURACION_GLOBAL {
         int id PK
         int anticipacion_cancelacion_horas
-        int aviso_vencimiento_carnet_dias
         timestamp_tz created_at
         timestamp_tz updated_at
     }
@@ -127,6 +156,8 @@ erDiagram
     USUARIOS ||--o{ NOTIFICACIONES : "recibe"
     AREAS ||--o{ TRAMITES : "gestiona"
     TRAMITES ||--o{ VARIANTES : "ofrece"
+    TRAMITES ||--o{ TRAMITES_DOCUMENTOS : "posee"
+    TRAMITES ||--o{ TRAMITES_ENLACES : "tiene"
     TRAMITES ||--o{ TURNOS : "se_clasifica_en"
     TRAMITES ||--o{ AGENDA_CONFIGURACION : "tiene_horarios"
     TRAMITES ||--o{ CARNETS : "asociado_a"
@@ -189,7 +220,8 @@ Gestiones específicas pertenecientes a un área.
 | `area_id` | `INTEGER` | `NOT NULL`, `REFERENCES areas(id)` | Área a la que pertenece el trámite. |
 | `nombre` | `VARCHAR(150)` | `NOT NULL` | Nombre del trámite (ej: "Renovación Carnet de Conducir B1"). |
 | `descripcion` | `TEXT` | `NULL` | Explicación del trámite. |
-| `documentacion_requerida` | `TEXT` | `NOT NULL` | Lista de requisitos y documentación (formato markdown/texto). |
+| `documentacion_requerida` | `TEXT` | `NOT NULL` | Lista de requisitos y documentación que debe traer el día del turno (formato markdown/texto). |
+| `requerimientos_previos` | `TEXT` | `NULL` | Acciones o requisitos previos que debe cumplir antes de asistir (formato markdown/texto). |
 | `emite_carnet` | `BOOLEAN` | `NOT NULL`, `DEFAULT FALSE` | Indica si finalizar el trámite genera un Carnet habilitante. |
 | `limite_sobreturnos_diarios` | `INTEGER` | `NOT NULL`, `DEFAULT 5` | Límite diario de sobreturnos para este trámite (o `NULL` para ilimitado). |
 | `created_at` | `TIMESTAMP WITH TIME ZONE` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP` | Fecha de creación. |
@@ -311,7 +343,47 @@ Tabla de registro único para variables de configuración de comportamiento del 
 |---|---|---|---|
 | `id` | `SERIAL` | `PRIMARY KEY` | Identificador único de la configuración. |
 | `anticipacion_cancelacion_horas` | `INTEGER` | `NOT NULL`, `DEFAULT 24` | Horas mínimas de antelación para que un ciudadano cancele/reprograme. |
-| `aviso_vencimiento_carnet_dias` | `INTEGER` | `NOT NULL`, `DEFAULT 30` | Días de anticipación para avisar sobre el vencimiento del carnet. |
+| `created_at` | `TIMESTAMP WITH TIME ZONE` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP` | Fecha de creación. |
+| `updated_at` | `TIMESTAMP WITH TIME ZONE` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP` | Última actualización. |
+
+### 2.13 Tabla `tramites_documentos`
+Almacena las rutas de los archivos físicos subidos directamente al servidor por el administrativo para que el ciudadano pueda descargarlos.
+
+| Columna | Tipo SQL | Restricciones | Descripción |
+|---|---|---|---|
+| `id` | `SERIAL` | `PRIMARY KEY` | Identificador único del documento. |
+| `tramite_id` | `INTEGER` | `NOT NULL`, `REFERENCES tramites(id) ON DELETE CASCADE` | Trámite al que pertenece el documento. |
+| `nombre` | `VARCHAR(150)` | `NOT NULL` | Nombre descriptivo del archivo (ej: "Formulario de Declaración Jurada"). |
+| `ruta_archivo` | `VARCHAR(255)` | `NOT NULL` | Ruta física o URI de almacenamiento local del archivo en el servidor. |
+| `created_at` | `TIMESTAMP WITH TIME ZONE` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP` | Fecha de creación. |
+| `updated_at` | `TIMESTAMP WITH TIME ZONE` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP` | Última actualización. |
+
+### 2.14 Tabla `tramites_enlaces`
+Registra los hipervínculos externos asociados al trámite.
+
+| Columna | Tipo SQL | Restricciones | Descripción |
+|---|---|---|---|
+| `id` | `SERIAL` | `PRIMARY KEY` | Identificador del enlace. |
+| `tramite_id` | `INTEGER` | `NOT NULL`, `REFERENCES tramites(id) ON DELETE CASCADE` | Trámite al que pertenece el enlace. |
+| `descripcion` | `VARCHAR(150)` | `NOT NULL` | Texto del enlace a mostrar en pantalla (ej: "Consultar multas nacionales"). |
+| `url` | `VARCHAR(255)` | `NOT NULL` | Dirección web (URL) del enlace externo. |
+| `created_at` | `TIMESTAMP WITH TIME ZONE` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP` | Fecha de creación. |
+| `updated_at` | `TIMESTAMP WITH TIME ZONE` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP` | Última actualización. |
+
+### 2.15 Tabla `reportes_usurpacion_dni`
+Almacena las denuncias no autenticadas enviadas por ciudadanos cuyo DNI ya está registrado por un tercero.
+
+| Columna | Tipo SQL | Restricciones | Descripción |
+|---|---|---|---|
+| `id` | `SERIAL` | `PRIMARY KEY` | Identificador único del reporte. |
+| `dni_usurpado` | `VARCHAR(20)` | `NOT NULL` | DNI en conflicto que fue reportado. |
+| `nombre_reportante` | `VARCHAR(100)` | `NOT NULL` | Nombre real del denunciante. |
+| `apellido_reportante` | `VARCHAR(100)` | `NOT NULL` | Apellido real del denunciante. |
+| `email_reportante` | `VARCHAR(255)` | `NOT NULL` | Correo de contacto del denunciante. |
+| `telefono_reportante` | `VARCHAR(50)` | `NOT NULL` | Teléfono de contacto del denunciante. |
+| `motivo_comentario` | `TEXT` | `NOT NULL` | Descripción/comentario brindado por el denunciante. |
+| `estado` | `VARCHAR(50)` | `NOT NULL`, `DEFAULT 'PENDIENTE'` | Estado de gestión (`PENDIENTE`, `EN_PROCESO`, `RESUELTO`, `RECHAZADO`). |
+| `resolucion_comentario` | `TEXT` | `NULL` | Comentario final de resolución del administrativo. |
 | `created_at` | `TIMESTAMP WITH TIME ZONE` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP` | Fecha de creación. |
 | `updated_at` | `TIMESTAMP WITH TIME ZONE` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP` | Última actualización. |
 
@@ -398,11 +470,5 @@ Este algoritmo permite encontrar la primera franja libre adecuada para la duraci
     1. `sobreturno_prioridad`: `ALTA` $\rightarrow$ `MEDIA` $\rightarrow$ `BAJA`.
     2. `created_at`: Orden cronológico de creación (primero en entrar, primero en salir) para desempatar prioridades iguales.
 
-### 4.5 Alertas de Vencimiento de Carnet (HU-13)
-- Cuando un trámite que emite carnet finaliza con estado `COMPLETO`, el administrativo registra la `fecha_vencimiento` y se inserta el registro correspondiente en la tabla `carnets`.
-- **Daemon de Notificación Asíncrona (Cronjob)**:
-  - Cada día a las 08:00 (hora local), un proceso en segundo plano identifica todos los registros activos en la entidad de carnets cuyo vencimiento sea exactamente en 30 días, asociando el ciudadano titular para obtener sus datos de contacto.
-  - Por cada carnet devuelto por la consulta, el sistema dispara tres tareas asíncronas de notificación sin bloquear el flujo principal:
-    1. **Notificación en plataforma:** Registro en el tablón de notificaciones del ciudadano.
-    2. **Notificación por Correo Electrónico:** Envío de plantilla HTML de aviso de renovación.
-    3. **Notificación por WhatsApp:** Envío de mensaje automático mediante la API de WhatsApp del municipio con el aviso de vencimiento a 30 días.
+### 4.5 Alertas de Vencimiento de Carnet (HU-13) — [OBSOLETO]
+- **Requerimiento eliminado por el cliente.** La sección de envío de alertas automáticas diarias al ciudadano sobre el vencimiento del carnet queda totalmente desactivada. La tabla `carnets` se mantiene únicamente para almacenamiento histórico y consulta de control del administrativo.

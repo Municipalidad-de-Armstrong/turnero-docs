@@ -51,7 +51,43 @@ Este dominio es responsable de la gestión de cuentas de usuario, el control de 
 
 ---
 
-## 2. Reglas de Negocio del Dominio
+## 2. Diagrama de Flujo de Registro y Gestión de Usurpación
+
+El siguiente diagrama detalla la lógica de registro de ciudadanos, la ramificación ante colisión de DNI y el flujo de resolución de usurpación por parte del administrativo:
+
+```mermaid
+flowchart TD
+    Start([Ciudadano inicia registro]) --> Input[Ingresa DNI, Email, Teléfono, Contraseña]
+    Input --> ValDni{¿DNI ya existe?}
+    
+    ValDni -->|No| CreatePending[Crear cuenta en PENDING_VALIDATION]
+    CreatePending --> SendMail[Enviar Email con token de confirmación]
+    SendMail --> ClickToken[Ciudadano confirma token]
+    ClickToken --> SetActive[Cuenta cambia a ACTIVE]
+    SetActive --> EndOK([Registro Completado])
+    
+    ValDni -->|Sí| AlertDni[Mostrar alerta de DNI en uso]
+    AlertDni --> FormUsur[Habilitar formulario de Reportar Usurpación]
+    FormUsur --> SubmitReport[Denunciante ingresa datos y motivo]
+    SubmitReport --> SaveReport[Guardar Reporte de Usurpación en PENDIENTE]
+    SaveReport --> NotifyReport([Fin del flujo público - Reporte Encolado])
+    
+    %% Flujo Administrativo
+    NotifyReport -.-> AdminReview[Administrativo audita reporte PENDIENTE]
+    AdminReview --> Resolve{¿Se corrobora usurpación?}
+    
+    Resolve -->|No - Rechazado| Reject[Cambiar reporte a RECHAZADO con comentario]
+    Reject --> EndAudit([Cerrar Reporte])
+    
+    Resolve -->|Sí - Resuelto| Suspend[Cambiar reporte a RESUELTO con comentario]
+    Suspend --> SuspendAcc[Desactivar/Suspender la cuenta usurpadora activa]
+    SuspendAcc --> NotifyReal[Notificar al denunciante para que proceda a registrarse presencial u online]
+    NotifyReal --> EndAudit
+```
+
+---
+
+## 3. Reglas de Negocio del Dominio
 
 1. **Autenticación Híbrida:**
    - La API del backend admite la autenticación a través de cabeceras `Authorization: Bearer <JWT>` (para testing de API o integraciones) y a través del parámetro de cookie `session_token` (canal principal del frontend).

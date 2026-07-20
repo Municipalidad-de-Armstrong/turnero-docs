@@ -93,6 +93,31 @@ Los servicios externos pueden experimentar caídas temporales o límites de velo
 - **Límite de Intentos:** Un máximo de 5 reintentos en un periodo de 24 horas.
 - **Tratamiento de Fallos Persistentes (Dead Letter Queue):** Si la tarea falla tras agotar los reintentos, se registra el error crítico en el sistema de logs, se marca la notificación como fallida en la base de datos y se notifica al administrador para su gestión manual.
 
+#### Diagrama de Flujo del Ciclo de Reintentos de Notificación
+```mermaid
+flowchart TD
+    Start([Worker recibe Tarea de Notificación]) --> Execute[Intentar envío SMTP / WhatsApp]
+    Execute --> ValSuccess{¿Envío Exitoso?}
+    
+    ValSuccess -->|Sí| SetSuccess[Marcar notificación como ENVIADA en DB]
+    SetSuccess --> EndOK([Fin de Tarea])
+    
+    ValSuccess -->|No| ValRecoverable{¿Es error temporal/red?}
+    
+    ValRecoverable -->|No - Error Fatal| SetFailed[Marcar notificación como FALLIDA en DB]
+    SetFailed --> LogError[Registrar error crítico en Log]
+    LogError --> DLQ[Encolar en Dead Letter Queue para auditoría]
+    DLQ --> EndErr([Fin con Error])
+    
+    ValRecoverable -->|Sí| ValAttempts{¿Intentos < 5?}
+    
+    ValAttempts -->|No| SetFailed
+    
+    ValAttempts -->|Sí| CalcBackoff[Calcular Backoff Exponencial + Jitter]
+    CalcBackoff --> Requeue[Re-encolar tarea con retraso de espera]
+    Requeue --> EndRetry([Reintentando])
+```
+
 ### 2.3 Detalles de Integración de Mensajería
 - **Canal de Correo Electrónico:** Envío de correos multi-parte (texto plano y HTML). Las planillas obligatorias se adjuntan como archivo adjunto o se proporciona un enlace temporal único y firmado para su descarga.
 - **Canal de WhatsApp:** Consumo del servicio oficial de mensajería del municipio mediante llamadas seguras, utilizando plantillas pre-aprobadas con variables dinámicas de contexto.

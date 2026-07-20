@@ -62,156 +62,49 @@ Operador interno con **panel exclusivo**; ingresa con email + contraseña (`ADT-
 
 ---
 
-## 2. Historias de Usuario Técnicas
+## 2. Índice de Especificaciones por Dominio (Bounded Contexts)
 
-Convención: **HU-XX** · *Como `<actor>`, quiero `<acción>` para `<valor>`.* Se referencia el requerimiento origen y se incluyen criterios de aceptación (CA).
+Para lograr un diseño modular y mantener la gobernanza técnica de la documentación (SSOT), las historias de usuario, los diagramas de secuencia, las máquinas de estado y las reglas de negocio específicas han sido segmentados en los siguientes archivos de especificación funcional:
 
-### 2.1 Ciudadano — Cuenta y autenticación
+### [1. Dominio de Identidad y Autenticación](dominios/1-identity.md)
+* **Alcance:** Registro de ciudadanos, login/logout con cookies JWT HttpOnly, recuperación de claves, roles (`USU`, `ADT`, `ADM`) y el protocolo de reportes de usurpación de DNI en conflicto.
+* **Componentes clave:** Login, Registro, Recuperación, Gestión de Usurpaciones.
 
-- **HU-01** `USU-02` — *Como Ciudadano, quiero registrarme con DNI, email, teléfono y contraseña para acceder al sistema.*
-  - CA: DNI único; email único y validado; teléfono obligatorio; contraseña con política mínima.
-- **HU-02** — *Como Ciudadano, quiero iniciar y cerrar sesión de forma segura.*
-  - CA: sesión persistente con expiración; logout invalida el token.
-- **HU-03** — *Como Ciudadano, quiero recuperar mi contraseña si la olvidé.*
-  - CA: token de reseteo de un solo uso con expiración; email al correo registrado.
-- **HU-04** `USU-02` — *Como Ciudadano, quiero editar mis datos de contacto.*
-  - CA: teléfono y email editables; cambio de email requiere revalidación.
+### [2. Dominio de Catálogo y Configuración](dominios/2-catalog.md)
+* **Alcance:** Gestión de la oferta municipal de Áreas, Trámites y sus Variantes de duración. Configuración de límites y adjuntos del trámite (documentos descargables y enlaces útiles).
+* **Componentes clave:** Editor de Trámites, Gestor de Requisitos.
 
-### 2.2 Ciudadano — Reserva de turnos
+### [3. Dominio de Agendamiento](dominios/3-scheduling.md)
+* **Alcance:** Parámetros de atención semanal (días y horas hábiles) y la capacidad simultánea de atención por trámite.
+* **Componentes clave:** Configuración de Agenda.
 
-- **HU-05** `USU-01` `USU-03` — *Como Ciudadano, quiero elegir turno primero por tipo de trámite y luego por variante.*
-  - CA: menú en dos pasos (tipo → variante); muestra documentación requerida por trámite (`ADT-06`).
-- **HU-06** `USU-04` — *Como Ciudadano, quiero seleccionar más de una variante en una misma solicitud.*
-  - CA: carrito/selección múltiple de variantes; cupo validado por cada variante.
-- **HU-07** `USU-06` `USU-05` — *Como Ciudadano, quiero ver los turnos disponibles y elegir fecha y horario.*
-  - CA: grilla con cupos reales en tiempo real; bloqueo optimista contra doble reserva.
-- **HU-08** `USU-07` — *Como Ciudadano, quiero usar una opción rápida "primer turno disponible".*
-  - CA: asigna la primera franja libre del trámite/variante seleccionada.
-- **HU-09** `USU-08` `USU-09` — *Como Ciudadano, quiero recibir la confirmación con la planilla del trámite.*
-  - CA: al confirmar, turno → **Reservado**; se envía **planilla** por email y WhatsApp y notificación en plataforma.
-- **HU-10** — *Como Ciudadano, quiero reprogramar un turno existente.*
-  - CA: solo sobre turnos Reservados; respeta anticipación mínima; libera el cupo anterior.
-- **HU-11** — *Como Ciudadano, quiero cancelar un turno que ya no necesito.*
-  - CA: libera cupo; turno → **Cancelado**; notificación en plataforma, email y WhatsApp.
-- **HU-12** `USU-11` — *Como Ciudadano, quiero ver mis turnos y sobreturnos.*
-  - CA: sección con próximos turnos, sobreturnos e historial.
-- **HU-13** `USU-10` — *[OBSOLETA] Como Ciudadano, quiero ser avisado cuando mi carnet esté por vencer.*
-  - CA: **Requerimiento dado de baja por el cliente.** No se realiza seguimiento automático de alertas de vencimiento ni se envían notificaciones por ningún canal.
+### [4. Dominio de Reservas y Disponibilidad](dominios/4-booking.md)
+* **Alcance:** Motor de cálculo de slots de disponibilidad para múltiples variantes (carrito de variantes), validación de solapamientos sin condiciones de carrera, reserva de turnos, reprogramación y cancelación.
+* **Diagramas incluidos:** Diagrama de secuencia del Motor de Disponibilidad y Diagrama del Stepper de reserva del frontend.
 
-### 2.3 Administrativo — Gestión operativa
+### [5. Dominio de Operación y Cierre](dominios/5-operation.md)
+* **Alcance:** Gestión diaria de la cola de turnos en tiempo real, sobreturnos con prioridad y límites diarios, atendedor de resultados del trámite (Completo, Incompleto, Ausente) y registro histórico de Carnets.
+* **Diagramas incluidos:** Máquina de Estados de la entidad `Turno`.
 
-- **HU-14** `ADT-01` `ADT-03` — *Como Administrativo, quiero un panel para gestionar turnos, usuarios y trámites de cualquier área.*
-- **HU-15** `ADT-04` — *Como Administrativo, quiero cargar turnos manualmente (presencial/WhatsApp/teléfono).*
-  - CA: busca ciudadano por DNI o lo registra de forma simultánea; asigna trámite + variante + horario.
-- **HU-16** `ADT-05` — *Como Administrativo, quiero modificar los datos de cualquier turno existente en el sistema.*
-- **HU-17** `ADT-06` — *Como Administrativo, quiero asignar la documentación requerida a cada trámite.*
-- **HU-18** `ADT-07` — *Como Administrativo, quiero registrar horarios y fechas de los turnos (agenda).*
-- **HU-19** `ADT-08` — *Como Administrativo, quiero cargar sobreturnos para un día específico, ordenados por prioridad.*
-  - CA: turno extra fuera de la agenda regular; marcado `es_sobturno`; ordenado por prioridad asignada manualmente (Alta, Media, Baja) y sub-ordenado cronológicamente. Límite diario de sobreturnos configurable por trámite/área (por defecto 5, permitiendo deshabilitar/ilimitado).
-- **HU-20** `ADT-09` — *Como Administrativo, quiero cerrar un turno marcándolo completo, incompleto o ausente.*
-  - CA: al finalizar el turno marca **"completo"** (trámite satisfactorio), **"incompleto"** (asistió pero faltó documentación u otra razón) o **"ausente"** (no asistió). Si el trámite genera carnet, al marcar "completo" el administrativo ingresa la fecha de vencimiento para registrar el Carnet localmente de forma histórica (sin disparar alertas automáticas de vencimiento).
-
-- **HU-25** `USU-03` — *Como Ciudadano, quiero visualizar los requerimientos previos, descargar documentos descargables y acceder a enlaces útiles de un trámite antes de mi turno.*
-  - CA: En el detalle del turno en plataforma se exponen: los requerimientos previos en formato Markdown, la lista de enlaces útiles con hipervínculos externos, y la lista de documentos adicionales con opción de descarga directa de archivos físicos almacenados en el servidor.
-- **HU-26** `ADT-06` — *Como Administrativo, quiero gestionar los requerimientos previos, subir documentos descargables y configurar enlaces útiles para cada trámite.*
-  - CA: El panel administrativo permite editar el texto enriquecido de requerimientos previos por trámite, subir archivos físicos para que se almacenen localmente y asociar enlaces externos con un nombre descriptivo y URL. Todos estos recursos se configuran de forma global a nivel de Trámite.
-- **HU-27** — *Como Ciudadano no autenticado, quiero reportar una usurpación de DNI si el sistema me indica que mi DNI ya se encuentra en uso.*
-  - CA: Si durante el registro se detecta que el DNI ya existe, se muestra un botón/enlace de "Reportar usurpación". Abre un formulario que solicita Nombre, Apellido, Email, Teléfono (del denunciante), DNI en conflicto y un comentario explicativo. Se guarda en estado PENDIENTE.
-- **HU-28** — *Como Administrativo, quiero gestionar los reportes de usurpación de DNI.*
-  - CA: El panel del administrativo incluye una vista de "Reportes de Identidad" que lista los reportes PENDIENTES. El administrativo puede cambiar el estado a EN_PROCESO, RESUELTO o RECHAZADO agregando un comentario de resolución, además de poder acceder directamente al perfil de la cuenta "usurpadora" asociada para desactivarla o suspenderla.
-
-### 2.4 Administrador — Administración global
-
-- **HU-21** `ADM-01` — *Como Administrador, quiero gestionar el sistema completo.*
-- **HU-22** `ADM-02` — *Como Administrador, opero como cuenta única sembrada con todos los privilegios.*
-- **HU-23** `ADM-03` — *Como Administrador, quiero crear cuentas para usuarios administrativos.*
-- **HU-24** `ADM-04` — *Como Administrador, quiero eliminar usuarios administrativos.*
+### [6. Dominio de Notificaciones y Planillas](dominios/6-notifications.md)
+* **Alcance:** Envío asíncrono de confirmaciones y cancelaciones por Email y WhatsApp, y generación de la planilla PDF descargable de la cita.
+* **Componentes clave:** Tareas en segundo plano (Background Tasks), Generador de PDF.
 
 ---
 
-## 3. Flujos Críticos
+## 3. Supuestos y decisiones de negocio consolidadas
 
-### 3.1 Registro de ciudadano `USU-02`
-
-**Actor:** Ciudadano · **Precondición:** no posee cuenta.
-
-1. Ciudadano accede a "Registrarse".
-2. Completa formulario: nombre, apellido, **DNI, email, teléfono**, contraseña.
-3. **Sistema valida:** email único, DNI único, política de contraseña.
-4. Sistema crea la cuenta en estado *pendiente de validación* y envía email de confirmación.
-5. Ciudadano confirma vía enlace (token de un solo uso).
-6. Cuenta pasa a *activa*; puede iniciar sesión y reservar.
-
-**Alternativos:** DNI/email existente → se ofrece recuperación. Si el DNI ya está en uso, se ofrece la opción "Reportar usurpación de DNI" para enviar una denuncia de identidad no autenticada al administrativo; token expirado → reenvío.
-
-### 3.2 Reserva de turno `USU-01` `USU-03..09`
-
-**Actor:** Ciudadano · **Precondición:** sesión iniciada, cuenta activa.
-
-1. Ciudadano elige **tipo de trámite** y luego **variante(s)**; puede seleccionar **más de una variante** (`USU-04`). El sistema calcula la duración total del turno sumando la duración de todas las variantes seleccionadas para agendar un bloque continuo único de tiempo.
-2. Sistema muestra documentación requerida, los requerimientos previos del trámite, los enlaces útiles asociados, los documentos descargables subidos para dicho trámite y la disponibilidad real (`USU-06`).
-3. Ciudadano elige fecha/hora (`USU-05`) **o** usa **"primer turno disponible"** (`USU-07`).
-4. **Sistema valida disponibilidad** con bloqueo contra doble reserva (concurrencia).
-5. Turno creado en estado **Reservado** (fecha, hora, área, trámite, variante(s), ciudadano).
-6. Sistema envía por **email y WhatsApp**: confirmación + **planilla** descargable (`USU-09`), y notificación en plataforma (`USU-08`).
-
-**Alternativos:** sin disponibilidad → fechas alternativas o sobreturno vía administrativo; conflicto de concurrencia → refresco de grilla.
-
-### 3.3 Asignación de sobreturno `ADT-08`
-
-**Actor:** Administrativo · **Precondición:** se requiere un turno fuera de la agenda regular.
-
-1. El ciudadano (presencial/WhatsApp/teléfono) solicita atención sin cupo en agenda.
-2. Administrativo abre el día/trámite y selecciona "Cargar sobreturno".
-3. Sistema crea un turno extra para ese **día específico**, marcado `es_sobturno = true`.
-4. El sobreturno se **ordena por prioridad** (Alta, Media, Baja asignada de forma manual) y, a igual prioridad, por orden cronológico de creación.
-5. Sistema notifica al ciudadano (plataforma/email/WhatsApp) con código/comprobante y planilla.
-
-**Alternativos:** límite diario de sobreturnos (límite configurable por área/trámite, por defecto 5 sobreturnos diarios) → bloqueo y aviso; ciudadano no registrado → registro simultáneo (`HU-15`).
-
-### 3.4 Cancelación
-
-**Actor:** Ciudadano o Administrativo · **Precondición:** turno en estado **Reservado**.
-
-**Por ciudadano:**
-1. Ciudadano selecciona el turno y elige "Cancelar".
-2. Sistema verifica anticipación mínima (parámetro configurable a nivel sistema, por defecto 24 horas).
-3. Turno → **Cancelado**; se libera el cupo.
-4. Notificación en plataforma, **email y WhatsApp**.
-
-**Por administrativo:**
-1. Administrativo localiza el turno en la cola.
-2. Indica motivo (obligatorio) y cancela.
-3. Turno → **Cancelado**; notificación al ciudadano por todos los canales; registro en auditoría.
-
-**Alternativos:** fuera de anticipación → el ciudadano no puede autodescancelar (debe contactar a la municipalidad); turno ya cerrado → no se puede cancelar.
-
-### 3.5 Cierre / resultado del trámite `ADT-09`
-
-**Actor:** Administrativo · **Precondición:** turno atendido.
-
-1. Administrativo atiende al ciudadano y, al finalizar, registra el resultado.
-2. Marca el turno como **"completo"** (trámite satisfactorio), **"incompleto"** (asistió pero no pudo completar) o **"ausente"** (no asistió al turno).
-3. Si el turno es "completo" y el trámite genera carnet, el Administrativo ingresa la fecha de vencimiento. El sistema genera el registro local de "Carnet" asociado al Ciudadano únicamente para control e historial interno del municipio (se desactiva el envío automático de alertas de vencimiento).
+- **Autenticación ciudadano:** Email + contraseña (exigiendo DNI, email y teléfono obligatorios en el registro).
+- **Acceso Multi-área:** La arquitectura soporta múltiples áreas, y los usuarios administrativos tienen acceso global para gestionar todas las áreas del municipio.
+- **Canal de Notificaciones:** Se despachan avisos por tres vías simultáneas: plataforma, email y WhatsApp (este último de forma mandatoria y no diferido).
+- **Control de Carnets:** Se almacena una entidad `Carnet` histórica vinculada al ciudadano (con número, fecha de emisión y vencimiento) al marcar como Completo un turno de un trámite que emite carnet. Se desactivan por completo las alertas automáticas de vencimiento al ciudadano, conservando la información solo para consulta administrativa.
+- **Reportes de Identidad:** Permite a ciudadanos no autenticados reportar un DNI en uso no autorizado durante el registro. Requiere datos de contacto reales y descripción. El administrativo puede suspender la cuenta del DNI usurpador directamente desde el reporte.
+- **Sobretornos:** Se marcan con `es_sobreturno = true` para un día específico. Cuentan con una prioridad asignada manualmente (Alta, Media, Baja), ordenándose por prioridad y luego por orden de llegada (hora de creación). Existe un límite diario de sobreturnos configurable por trámite (por defecto 5).
+- **Resultado del turno:** Los estados posibles para el resultado de un turno atendido son: `COMPLETO`, `INCOMPLETO` y `AUSENTE`.
+- **Reprogramación y Cancelación:** La cancelación/reprogramación por parte del ciudadano está sujeta a un parámetro de anticipación mínima configurable en el sistema por el Administrador (por defecto 24 horas). La reprogramación opera como una cancelación y nueva reserva en una sola transacción.
+- **Carrito de Variantes:** Cuando un ciudadano selecciona múltiples variantes en un mismo turno, el sistema realiza una reserva de un bloque continuo único de tiempo equivalente a la suma de las duraciones de las variantes seleccionadas.
 
 ---
 
-## 4. Supuestos y decisiones (reconciliadas con el análisis)
-
-- **Roles y nombres:** alineados al análisis: **Administrador** (único, sembrado, `ADM-02`), **Administrativo** (`ADT`), **Usuario/Ciudadano** (`USU`).
-- **Autenticación ciudadano:** email + contraseña (decisión acordada con el cliente; complementa `USU-02`, que exige DNI/email/teléfono en el registro).
-- **Estructura multi-área:** la arquitectura soporta múltiples áreas (ej. Rentas, Tránsito, etc.), y el usuario administrativo tiene acceso global para gestionar todas las áreas del sistema.
-- **Notificaciones:** **siempre** en plataforma + email + **WhatsApp** (`USU-08`). WhatsApp es un requerimiento, no diferido.
-- **Planilla:** descargable y enviada por email y WhatsApp (`USU-09`).
-- **Carnet y Vencimientos:** se almacena una entidad "Carnet" en forma local e independiente vinculada al ciudadano (con su número, fecha de emisión y vencimiento) al momento de marcar como "completo" un turno de un trámite que emite carnet (`emite_carnet = true`). Se eliminan todas las notificaciones automáticas y alertas por email/WhatsApp del vencimiento, quedando como un registro histórico exclusivo para control administrativo interno del municipio.
-- **Requerimientos, Documentos y Enlaces:** se gestionan globalmente a nivel de Trámite. Los requerimientos previos se escriben en Markdown. Los enlaces externos constan de un título y una URL. Los documentos adjuntos son archivos físicos subidos directamente al backend y descargados por el ciudadano desde el detalle de su turno.
-- **Reportes de Usurpación de DNI:** permite a ciudadanos no autenticados reportar un DNI en uso no autorizado durante el registro. Requiere datos de contacto reales y descripción. El administrativo puede suspender la cuenta del DNI usurpador directamente desde el reporte o marcarlo como resuelto/rechazado tras una verificación presencial u offline.
-- **Sobretornos:** se marcan con `es_sobturno = true` para un día específico. Cuentan con una prioridad asignada manualmente (Alta, Media, Baja) por el administrativo, ordenándose por prioridad y luego por orden de llegada (hora de creación). Existe un límite diario de sobreturnos configurable por trámite/área (por defecto 5, con opción a ilimitado).
-- **Resultado del turno:** los estados posibles para el resultado de un turno atendido/finalizado son: **completo** (trámite satisfactorio), **incompleto** (trámite no satisfactorio o no finalizado tras la asistencia) y **ausente** (el ciudadano no asistió al turno).
-- **Reprogramación y Cancelación:** la cancelación/reprogramación por parte del ciudadano está sujeta a un parámetro de anticipación mínima configurable en el sistema por el Administrador (por defecto 24 horas). La reprogramación opera lógicamente como una cancelación y nueva reserva en una sola transacción.
-- **Carrito de Variantes:** cuando un ciudadano selecciona múltiples variantes en un mismo turno, el sistema realiza una reserva de un bloque continuo único de tiempo equivalente a la suma de las duraciones de las variantes seleccionadas.
-
----
-
-## 5. Historial de Resoluciones de Ambigüedades
-Todas las ambigüedades de negocio identificadas inicialmente en esta sección han sido resueltas en acuerdo con el cliente (véase Sección 4). No quedan pendientes de definición para el inicio de la Fase 2.
+## 4. Historial de Resoluciones de Ambigüedades
+Todas las ambigüedades de negocio identificadas inicialmente en esta sección han sido resueltas en acuerdo con el cliente. No quedan pendientes de definición para el inicio de la fase de construcción.

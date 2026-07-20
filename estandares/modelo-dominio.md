@@ -430,9 +430,36 @@ $$\text{duracion\_total} = \sum_{i=1}^{n} v_i.\text{duracion\_minutos}$$
 - **Ejemplo:** Trámite "Licencia de Conducir" con variantes "Examen Físico" (15 min) y "Examen Teórico" (30 min) $\rightarrow \text{duracion\_total} = 45\text{ minutos}$.
 - El turno ocupará el rango `[fecha_hora_inicio, fecha_hora_inicio + duracion_total]`.
 
-### 4.2 Lógica de Validación de Disponibilidad (HU-05, HU-06, HU-07)
-Para que un turno regular en el rango de tiempo $[T_{\text{inicio}}, T_{\text{fin}}]$ sea válido:
+### 4.2 Lógica de Validación de Disponibilidad y Concurrencia (HU-05, HU-06, HU-07)
 
+Para que un turno regular en el rango de tiempo $[T_{\text{inicio}}, T_{\text{fin}}]$ sea válido y no genere sobre-reservas:
+
+#### Diagrama de Secuencia del Motor de Disponibilidad
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Ciudadano (Frontend)
+    participant API as FastAPI Backend
+    participant DB as PostgreSQL Database
+
+    C->>API: GET /turnos/disponibilidad?tramite_id=X&variantes=A,B&fecha=YYYY-MM-DD
+    Note over API: 1. Sumar duración de variantes: D = duracion(A) + duracion(B)<br>2. Determinar día de la semana
+    API->>DB: Obtener agenda_configuracion para tramite_id=X y dia_semana
+    DB-->>API: Retorna hora_inicio, hora_fin, capacidad_simultanea
+    
+    Note over API: 3. Generar slots candidatos de tamaño D en el rango [hora_inicio, hora_fin]
+    
+    API->>DB: Iniciar Transacción (Isolation Level: SERIALIZABLE o SELECT FOR UPDATE)
+    API->>DB: Obtener turnos reservados solapados en la fecha para tramite_id=X
+    DB-->>API: Retorna lista de turnos (fecha_hora_inicio, fecha_hora_fin)
+    
+    Note over API: 4. Para cada slot candidato [S_inicio, S_fin]:<br>- Contar cuántos turnos existentes se solapan en cualquier instante de ese rango.<br>- Si el máximo de solapamientos < capacidad_simultanea, el slot está disponible.
+    
+    API->>DB: Confirmar/Finalizar Transacción
+    API-->>C: Retorna array de slots disponibles (ej: ["08:00", "08:45", "10:30"])
+```
+
+#### Reglas de Validación de Slots
 1. **Paso 1: Validación de Rango de Agenda Semanal**
    - Extraer el día de la semana de $T_{\text{inicio}}$ (0 para Domingo, 1 para Lunes, etc.).
    - Buscar el registro activo de `agenda_configuracion` correspondiente al `tramite_id` y al día de la semana.
@@ -444,7 +471,9 @@ Para que un turno regular en el rango de tiempo $[T_{\text{inicio}}, T_{\text{fi
    - Calcular el número máximo de solapamientos en cualquier instante del rango. Para ello, discretizar el rango en bloques o evaluar en cada marca de tiempo que sea un inicio de turno en la base de datos dentro del rango.
    - Si en algún punto del intervalo el número de turnos concurrentes es $\ge \text{capacidad\_simultanea}$, la reserva se rechaza.
 3. **Paso 3: Evitar Condiciones de Carrera (Concurrencia)**
-   - La base de datos debe operar bajo el nivel de aislamiento `SERIALIZABLE` durante el guardado del turno, o realizar un bloqueo selectivo `SELECT FOR UPDATE` sobre los turnos solapados del trámite durante la validación para asegurar la atomicidad de la transacción.
+   - **Nivel de Aislamiento:** Para transacciones de escritura (reserva de turnos), la base de datos debe operar bajo el nivel de aislamiento `SERIALIZABLE` durante el guardado del turno, de modo que si otra transacción inserta un turno que interfiere en la capacidad simultánea antes de confirmar, se lance un error de serialización (`409 Conflict`).
+   - **Bloqueo Selectivo:** Alternativamente, se realizará un bloqueo a nivel de fila (`SELECT ... FOR UPDATE`) sobre las filas de turnos reservados del mismo trámite y día para asegurar la exclusión mutua de la validación del cupo dentro del bloque transaccional del backend.
+
 
 ### 4.3 Algoritmo para "Primer Turno Disponible" (HU-08)
 Este algoritmo permite encontrar la primera franja libre adecuada para la duración calculada $D$ de un trámite:

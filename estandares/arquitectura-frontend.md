@@ -114,6 +114,50 @@ src/
    - Permite al administrativo ingresar un comentario de resolución y cambiar el estado.
    - Provee un botón de acceso directo a la ficha del usuario "usurpador" con opción rápida para suspender o desactivar su cuenta de forma inmediata si se constata la irregularidad.
 
+### 3.1 Flujo de Navegación y Persistencia del Stepper de Reserva
+El flujo de reserva interactivo para el ciudadano se implementa como un componente de estado persistente del lado del cliente (con soporte de Zustand o parámetros de búsqueda URL) estructurado de la siguiente forma:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Paso1_Tramites : Ciudadano accede a /turnos/reservar
+    
+    state Paso1_Tramites {
+        [*] --> ElegirTramite
+        ElegirTramite --> ElegirVariantes : Trámite seleccionado
+        ElegirVariantes --> GuardarSeleccion : Variantes seleccionadas (V)
+    }
+    
+    Paso1_Tramites --> Paso2_Calendario : Continuar (Validar y Encolar datos en Zustand/URL)
+    note right of Paso2_Calendario
+        Estado temporal guardado:
+        - tramite_id
+        - variante_ids[]
+        - duracion_total
+    end note
+
+    state Paso2_Calendario {
+        [*] --> CargarSlots : API: GET /turnos/disponibilidad
+        CargarSlots --> MostrarGrilla : Slots obtenidos
+        MostrarGrilla --> ElegirSlot : Ciudadano selecciona Día y Hora
+    }
+    
+    Paso2_Calendario --> Paso3_Confirmar : Seleccionar horario (Guardar slot elegido)
+    
+    state Paso3_Confirmar {
+        [*] --> MostrarResumen : Exponer documentación requerida y resumen
+        MostrarResumen --> EnviarReserva : Click en "Confirmar Turno"
+        EnviarReserva --> BackendValidar : POST /turnos (Enviar tramite_id, variantes, slot)
+    }
+    
+    BackendValidar --> Exito : 201 Created (Redirección a /turnos)
+    BackendValidar --> ConflictoConcurrencia : 409 Conflict (Slot ocupado)
+    
+    ConflictoConcurrencia --> Paso2_Calendario : Volver a grilla (Refrescar disponibilidad)
+    Exito --> [*]
+```
+
+- **Manejo de Reintentos:** En caso de que el backend retorne un error de conflicto (`409 Conflict`), la interfaz informará de forma clara al ciudadano que el slot fue tomado por otro usuario e invalidará la grilla, forzando un refresco de disponibilidad en el Paso 2 para que seleccione un nuevo horario sin perder la configuración de variantes elegida en el Paso 1.
+
 ---
 
 ## 4. Estándares de Seguridad Frontend

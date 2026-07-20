@@ -18,7 +18,7 @@ El control de accesos y redirecciones se gestiona a nivel de middleware en Next.
 * **`/auth/resetear-password`**: Aplicación de la nueva contraseña mediante token temporal.
 
 ### B. Rutas del Ciudadano (Acceso: `CIUDADANO`)
-* **`/turnos`**: Vista principal ("Mi Panel"). Muestra los próximos turnos reservados del ciudadano, el historial de trámites pasados y las alertas de vencimiento de carnet.
+* **`/turnos`**: Vista principal ("Mi Panel"). Muestra los próximos turnos reservados del ciudadano y el historial de trámites pasados.
 * **`/turnos/reservar`**: Flujo de reserva interactivo en dos pasos (selección de trámite/variantes -> selección de fecha/hora).
 * **`/turnos/perfil`**: Vista de edición de datos de contacto del ciudadano (teléfono e email).
 
@@ -27,10 +27,10 @@ El control de accesos y redirecciones se gestiona a nivel de middleware en Next.
 * **`/admin/turnos`**: Buscador global de turnos históricos o futuros. Permite la edición, reprogramación o cancelación por parte de los operadores.
 * **`/admin/turnos/nuevo`**: Panel de carga manual de turnos. Incluye la búsqueda rápida de ciudadano por DNI (o su registro rápido *on-the-fly*).
 * **`/admin/tramites`**: Vista de trámites disponibles por área municipal. Configuración de requisitos y variantes de cada trámite.
-* **`/admin/agenda`**: Configuración de los bloques horarios, días hábiles, feriados y capacidad de atención por trámite.
+* **`/admin/agenda`**: Configuración de los bloques horarios, días hábiles y capacidad de atención por trámite.
 
 ### D. Rutas de Configuración Global (Acceso exclusivo: `ADMINISTRADOR`)
-* **`/admin/configuracion`**: Configuración de variables del sistema (ej: anticipación de cancelación, límite de sobreturnos, días previos de alerta de vencimiento).
+* **`/admin/configuracion`**: Configuración de variables del sistema (ej: anticipación de cancelación y límite de sobreturnos).
 * **`/admin/administrativos`**: Listado de cuentas administrativas. Creación de nuevos operadores y desactivación/eliminación de los mismos.
 
 ---

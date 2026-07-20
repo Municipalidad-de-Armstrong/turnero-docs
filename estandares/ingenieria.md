@@ -56,15 +56,15 @@ Cada fase de la hoja de ruta debe producir artefactos legibles y procesables de 
 ## 3. Decisiones de Arquitectura Base (ADRs)
 
 ### Backend (`turnero_api`)
-- **Lenguaje y Framework:** Python 3.11+ con **FastAPI**.
-- **Base de Datos:** PostgreSQL para persistencia transaccional y relacional.
+- **Lenguaje y Framework:** Python 3.13+ con **FastAPI 0.139+**.
+- **Base de Datos:** PostgreSQL 18 para persistencia transaccional y relacional.
 - **ORM:** SQLAlchemy (declarativo moderno 2.0+) con migraciones gestionadas por **Alembic**.
-- **Tareas Asíncronas:** Dado el requerimiento de notificaciones inmediatas por WhatsApp y Email, se requiere una arquitectura basada en **Background Tasks de FastAPI** (para simplicidad inicial) o **Celery con Redis** si el volumen de concurrencia lo amerita. *Queda estrictamente prohibido bloquear el hilo de ejecución principal de la API enviando un WhatsApp o un correo electrónico.*
+- **Tareas Asíncronas:** Dado el requerimiento de notificaciones inmediatas por WhatsApp y Email, se requiere una arquitectura basada en **Background Tasks de FastAPI** (para simplicidad inicial) o **Celery con Redis 8** si el volumen de concurrencia lo amerita. *Queda estrictamente prohibido bloquear el hilo de ejecución principal de la API enviando un WhatsApp o un correo electrónico.*
 
 ### Frontend (`turnero`)
-- **Framework:** **Next.js** (App Router).
-- **Lenguaje:** **TypeScript** con tipado estricto (`strict: true` en `tsconfig.json`).
-- **Estilos:** **Tailwind CSS** (estandarizado en la Fase 4 con Design Tokens).
+- **Framework:** **Next.js 16** (App Router).
+- **Lenguaje:** **TypeScript 7** con tipado estricto (`strict: true` en `tsconfig.json`).
+- **Estilos:** **Tailwind CSS v4** (estandarizado en la Fase 4 con Design Tokens).
 
 ### Seguridad
 - **Autenticación:** JWT (JSON Web Tokens) transmitidos mediante cookies HTTP-only (`session_token`) en el frontend para mitigar ataques XSS.

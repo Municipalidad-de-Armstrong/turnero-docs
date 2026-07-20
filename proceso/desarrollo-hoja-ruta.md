@@ -89,8 +89,8 @@ stateDiagram-v2
 ### [ ] Slice 1: Infraestructura Base, Setup (Boilerplate) y CORS
 *Meta: Establecer el entorno de desarrollo multi-contenedor y los cimientos de ambos repositorios con integración inicial y seguridad básica.*
 * **Infraestructura (`docker-compose`):**
-  - [ ] Levantar base de datos PostgreSQL 16.
-  - [ ] Levantar servicio Redis (para almacenamiento de caché en memoria e invalidación de tokens/blacklist).
+  - [ ] Levantar base de datos PostgreSQL 18.
+  - [ ] Levantar servicio Redis 8 (para almacenamiento de caché en memoria e invalidación de tokens/blacklist).
 * **Backend (`turnero_api`):**
   - [ ] Crear estructura básica de FastAPI (carpetas modularizadas: `app/api`, `app/models`, `app/schemas`, `app/services`, `app/core`).
   - [ ] Configurar variables de entorno estrictas con Pydantic Settings (`.env` con claves JWT, URIs de DB, secretos criptográficos).
@@ -98,7 +98,7 @@ stateDiagram-v2
   - [ ] Inicializar Alembic y configurar el archivo de migración base.
   - [ ] Escribir una ruta de Health Check (`GET /api/v1/health`) y probar que la conexión a PostgreSQL y Redis funcione.
 * **Frontend (`turnero`):**
-  - [ ] Inicializar la aplicación Next.js 16 con TypeScript, App Router, ESLint y Tailwind CSS.
+  - [ ] Inicializar la aplicación Next.js 16 con TypeScript 7, App Router, ESLint v10 y Tailwind CSS v4.
   - [ ] Configurar variables de entorno y cliente HTTP base (Axios o fetch estructurado).
   - [ ] Crear layouts y barra de navegación común.
 

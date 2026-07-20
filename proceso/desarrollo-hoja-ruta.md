@@ -4,6 +4,11 @@
 
 Este documento establece la estrategia y secuencia de construcción del sistema Turnero. El desarrollo se realiza mediante la metodología de **Slices Verticales (Vertical Slices)**. Cada slice representa una funcionalidad completa de punta a punta: desde la base de datos (con cifrado PII), lógica de negocio, colas asíncronas, auditoría ORM, hasta la interfaz del frontend y pruebas automatizadas, garantizando el cumplimiento estricto de los estándares de ingeniería, seguridad e infraestructura del municipio.
 
+> [!IMPORTANT]
+> **Metodología de Trabajo y Git:**
+> Los cambios deben implementarse y commitearse de manera incremental (de a poco) a medida que se avance en el desarrollo. Es obligatorio ramificar (crear ramas/branches independientes) para cada slice o funcionalidad cuando sea necesario, asegurando un flujo de trabajo ordenado e integrable.
+
+
 ---
 
 ## 1. Diagramas Técnicos de Diseño Crítico
@@ -84,7 +89,7 @@ stateDiagram-v2
 ### [ ] Slice 1: Infraestructura Base, Setup (Boilerplate) y CORS
 *Meta: Establecer el entorno de desarrollo multi-contenedor y los cimientos de ambos repositorios con integración inicial y seguridad básica.*
 * **Infraestructura (`docker-compose`):**
-  - [ ] Levantar base de datos PostgreSQL 15.
+  - [ ] Levantar base de datos PostgreSQL 16.
   - [ ] Levantar servicio Redis (para almacenamiento de caché en memoria e invalidación de tokens/blacklist).
 * **Backend (`turnero_api`):**
   - [ ] Crear estructura básica de FastAPI (carpetas modularizadas: `app/api`, `app/models`, `app/schemas`, `app/services`, `app/core`).
@@ -93,7 +98,7 @@ stateDiagram-v2
   - [ ] Inicializar Alembic y configurar el archivo de migración base.
   - [ ] Escribir una ruta de Health Check (`GET /api/v1/health`) y probar que la conexión a PostgreSQL y Redis funcione.
 * **Frontend (`turnero`):**
-  - [ ] Inicializar la aplicación Next.js 14+ con TypeScript, App Router, ESLint y Tailwind CSS.
+  - [ ] Inicializar la aplicación Next.js 16 con TypeScript, App Router, ESLint y Tailwind CSS.
   - [ ] Configurar variables de entorno y cliente HTTP base (Axios o fetch estructurado).
   - [ ] Crear layouts y barra de navegación común.
 

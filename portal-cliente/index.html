@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Cliente y Aprobación de Requerimientos — Municipalidad de Armstrong</title>
+  <!-- Fuentes Modernas -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Estilos del Portal -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Cabecera de la Aplicación -->
+  <header class="app-header">
+    <div class="header-content">
+      <div class="logo-placeholder">
+        <div class="logo-text">
+          <h1>Municipalidad de Armstrong</h1>
+          <p>Sistema de Turnos — Panel de Aprobación de Requerimientos</p>
+        </div>
+      </div>
+      <div>
+        <button class="btn btn-primary" onclick="openNewRequirementModal()">
+          Proponer Nuevo Requerimiento
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal -->
+  <main class="container">
+    
+    <!-- Pestañas de Navegación -->
+    <nav class="nav-tabs">
+      <button class="tab-btn active" data-tab="requirements">Requerimientos y Casos de Uso</button>
+      <button class="tab-btn" data-tab="design">Sistema de Diseño Previsto</button>
+      <button class="tab-btn" data-tab="security">Medidas de Seguridad</button>
+      <button class="tab-btn" data-tab="services">Servicios Externos</button>
+      <button class="tab-btn" data-tab="proposals">Mis Propuestas: <span id="proposal-count">0</span></button>
+    </nav>
+
+    <!-- Pestaña 1: Requerimientos y Casos de Uso -->
+    <section id="requirements" class="tab-content active">
+      <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">Listado General de Requerimientos y Casos de Uso</h2>
+        <p style="color: var(--text-secondary); font-size: 0.95rem;">
+          Revise la lista de requerimientos refinados para el sistema de turnos de la Municipalidad. Puede filtrar por el perfil del usuario involucrado o buscar por palabra clave. Utilice el botón "Proponer cambio" para enviarnos comentarios sobre requerimientos existentes.
+        </p>
+      </div>
+
+      <!-- Buscador y Filtros -->
+      <div class="search-controls">
+        <input type="text" id="search-input" class="input-text" placeholder="Buscar por palabra clave...">
+        <select id="actor-filter" class="select-filter">
+          <option value="ALL">Filtrar por perfil: Todos</option>
+          <option value="USU">Ciudadano</option>
+          <option value="ADT">Administrativo</option>
+          <option value="ADM">Administrador</option>
+        </select>
+      </div>
+
+      <!-- Contenedor de la Lista -->
+      <div id="requirements-container" class="requirements-grid">
+        <!-- Cargado dinámicamente desde app.js -->
+      </div>
+    </section>
+
+    <!-- Pestaña 2: Sistema de Diseño Previsto -->
+    <section id="design" class="tab-content">
+      <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">Guía de Identidad Visual y Sistema de Diseño Previsto</h2>
+        <p style="color: var(--text-secondary); font-size: 0.95rem;">
+          Este sistema de diseño define los colores y tipografías oficiales de la Municipalidad de Armstrong para la interfaz de usuario.
+        </p>
+      </div>
+
+      <div class="requirements-grid">
+        
+        <!-- Paleta Cromática -->
+        <div class="card">
+          <h3 class="card-title">1. Paleta Cromática Oficial</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            Colores corporativos y sus proporciones estimadas de uso para garantizar un contraste limpio y legibilidad.
+          </p>
+          
+          <div class="design-grid">
+            <!-- Naranja -->
+            <div class="color-card">
+              <div class="color-preview" style="background-color: #FE8F00;"></div>
+              <div class="color-info">
+                <div>
+                  <h4 style="font-size: 0.85rem; font-weight: 600;">Naranja Principal</h4>
+                  <p style="font-size: 0.75rem; color: var(--text-secondary);">Elementos de interacción y menú</p>
+                </div>
+                <span class="color-hex">#FE8F00</span>
+              </div>
+            </div>
+            <!-- Gris Claro Background -->
+            <div class="color-card">
+              <div class="color-preview" style="background-color: #F0F2F5; border-bottom: 1px solid var(--border-light);"></div>
+              <div class="color-info">
+                <div>
+                  <h4 style="font-size: 0.85rem; font-weight: 600;">Gris Claro</h4>
+                  <p style="font-size: 0.75rem; color: var(--text-secondary);">Fondos de pantalla y tarjetas</p>
+                </div>
+                <span class="color-hex">#F0F2F5</span>
+              </div>
+            </div>
+            <!-- Gris Oscuro Texto -->
+            <div class="color-card">
+              <div class="color-preview" style="background-color: #333333;"></div>
+              <div class="color-info">
+                <div>
+                  <h4 style="font-size: 0.85rem; font-weight: 600;">Gris Oscuro</h4>
+                  <p style="font-size: 0.75rem; color: var(--text-secondary);">Color de textos principales</p>
+                </div>
+                <span class="color-hex">#333333</span>
+              </div>
+            </div>
+          </div>
+
+          <h4 style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Colores de Estado de Turno:</h4>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+            <span class="badge badge-reservado">Reservado</span>
+            <span class="badge badge-completo">Completo</span>
+            <span class="badge badge-incompleto">Incompleto</span>
+            <span class="badge badge-ausente">Ausente</span>
+            <span class="badge badge-cancelado">Cancelado</span>
+          </div>
+        </div>
+
+        <!-- Tipografía -->
+        <div class="card">
+          <h3 class="card-title">2. Tipografía y Fuentes</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            Se define la fuente Montserrat o su variante Inter para una lectura limpia en dispositivos de escritorio y móviles.
+          </p>
+          <div class="font-demo">
+            <h1 style="font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 1.5rem; margin-bottom: 0.5rem;">Montserrat Bold para Títulos Principales</h1>
+            <h2 style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 1.2rem; margin-bottom: 0.5rem;">Montserrat Semibold para Subtítulos</h2>
+            <p style="font-family: 'Inter', sans-serif; font-weight: 400; font-size: 0.95rem; color: var(--text-secondary);">
+              Inter Regular para cuerpo de texto. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            </p>
+          </div>
+        </div>
+
+        <!-- Ejemplos de Componentes y Alertas -->
+        <div class="card">
+          <h3 class="card-title">3. Componentes de la Interfaz con Estilo Neutro y Básico</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            Ejemplos de botones, entradas de texto y cajas de información. El diseño mantiene una estética limpia, estándar y funcional.
+          </p>
+          
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+            <button class="btn btn-primary">Botón Primario</button>
+            <button class="btn">Botón Secundario</button>
+            <button class="btn btn-danger">Botón Peligro</button>
+            <button class="btn" disabled style="opacity: 0.5; cursor: not-allowed;">Deshabilitado</button>
+          </div>
+
+          <div style="margin-bottom: 1.5rem;">
+            <input type="text" class="input-text" style="width: 100%; max-width: 350px;" placeholder="Entrada de texto...">
+          </div>
+
+          <h4 style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Ejemplo de aviso importante para el ciudadano:</h4>
+          <div class="alert-warning">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <div>
+              <strong>Recordatorio para su cita:</strong> Debe presentarse diez minutos antes del horario asignado portando su documento nacional de identidad original y el comprobante de turno correspondiente.
+            </div>
+          </div>
+        </div>
+
+        <!-- Simuladores Interactivos -->
+        <div class="card">
+          <h3 class="card-title">4. Simulador Interactivo de Componentes</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            Interactúe con estos prototipos para comprender la lógica de funcionamiento de la aplicación final.
+          </p>
+
+          <div class="sim-container">
+            <!-- Simulador Carrito de Variantes -->
+            <div class="sim-box">
+              <h4 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.25rem;">
+                A. Selección de múltiples variantes de trámites
+              </h4>
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                Permite seleccionar más de un tipo de trámite simultáneo para calcular el tiempo total de atención.
+              </p>
+              <div>
+                <label class="variant-checkbox-item">
+                  <input type="checkbox" class="sim-variant-check" data-duration="15">
+                  <span>Examen Físico - 15 minutos</span>
+                </label>
+                <label class="variant-checkbox-item">
+                  <input type="checkbox" class="sim-variant-check" data-duration="30">
+                  <span>Examen Teórico - 30 minutos</span>
+                </label>
+                <label class="variant-checkbox-item">
+                  <input type="checkbox" class="sim-variant-check" data-duration="20">
+                  <span>Examen Práctico - 20 minutos</span>
+                </label>
+                <label class="variant-checkbox-item">
+                  <input type="checkbox" class="sim-variant-check" data-duration="60">
+                  <span>Curso de Vialidad - 60 minutos</span>
+                </label>
+              </div>
+              <div style="margin-top: 1rem; padding-top: 0.5rem; border-top: 1px solid var(--border-light); font-size: 0.85rem; font-weight: 600;">
+                Duración Total Reservada: <span id="sim-total-duration" style="color: var(--brand-orange);">0</span> minutos.
+              </div>
+            </div>
+
+            <!-- Simulador Grilla Slots -->
+            <div class="sim-box">
+              <h4 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.25rem;">
+                B. Selección de horarios
+              </h4>
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                Vista de horarios disponibles para el ciudadano.
+              </p>
+              
+              <div class="slots-grid-demo">
+                <div class="slot-item" data-time="08:00">08:00 hs</div>
+                <div class="slot-item occupied" title="Ocupado">08:30 hs</div>
+                <div class="slot-item" data-time="09:00">09:00 hs</div>
+                <div class="slot-item occupied" title="Ocupado">09:30 hs</div>
+                <div class="slot-item" data-time="10:00">10:00 hs</div>
+                <div class="slot-item" data-time="10:30">10:30 hs</div>
+              </div>
+
+              <div id="sim-booking-status" style="margin-top: 1rem; font-size: 0.85rem;">
+                <span style="color: var(--text-muted);">Haga clic en un horario libre para simular la selección.</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Pestaña 3: Medidas de Seguridad -->
+    <section id="security" class="tab-content">
+      <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">Seguridad y Privacidad de los Datos</h2>
+        <p style="color: var(--text-secondary); font-size: 0.95rem;">
+          El sistema cuenta con medidas de seguridad para proteger la información personal y asegurar el correcto funcionamiento administrativo.
+        </p>
+      </div>
+
+      <div class="requirements-grid">
+        
+        <!-- Cookies JWT -->
+        <div class="card">
+          <h3 class="card-title">1. Acceso seguro al sistema</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            La sesión del usuario se gestiona mediante cookies de sesión altamente protegidas y configuradas de manera segura en el servidor, lo que impide que agentes o programas externos roben el acceso.
+          </p>
+        </div>
+
+        <!-- Encriptación en Reposo y Tránsito -->
+        <div class="card">
+          <h3 class="card-title">2. Protección de Datos Personales</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            El DNI, el correo electrónico y el número de teléfono celular se almacenan cifrados en la base de datos. Adicionalmente, el sistema oculta parcialmente esta información en pantalla para mayor privacidad, como por ejemplo la visualización parcial del documento o de las casillas de correo. Los datos antiguos se borran o anonimizan de forma automática periódicamente.
+          </p>
+        </div>
+
+        <!-- Auditoría Administrativa -->
+        <div class="card">
+          <h3 class="card-title">3. Registro de auditoría administrativa</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            Cualquier modificación en la agenda o cancelación de turnos efectuada por el personal municipal queda registrada automáticamente en una bitácora que contiene la fecha, la hora, el usuario responsable y los datos modificados.
+          </p>
+        </div>
+
+        <!-- Encriptación de comunicación en tránsito -->
+        <div class="card">
+          <h3 class="card-title">4. Cifrado de comunicación en tránsito</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            Toda la información viaja encriptada y oculta a través de internet desde que se ingresa hasta que llega al servidor, impidiendo que terceros puedan interceptar o leer los datos enviados.
+          </p>
+        </div>
+
+        <!-- Resguardo irreversible de contraseñas -->
+        <div class="card">
+          <h3 class="card-title">5. Resguardo irreversible de contraseñas</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            Las claves se transforman en códigos matemáticos indescifrables, de modo que nadie, ni siquiera el equipo de administración municipal, puede conocer la contraseña real.
+          </p>
+        </div>
+
+        <!-- Protección de llaves de configuración -->
+        <div class="card">
+          <h3 class="card-title">6. Protección de llaves de configuración</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            Las claves maestras del sistema y de los servicios de mensajería se almacenan de forma independiente y aislada del código de programación, previniendo accesos no autorizados ante filtraciones.
+          </p>
+        </div>
+
+        <!-- Control de reserva simultánea -->
+        <div class="card">
+          <h3 class="card-title">7. Control de reserva simultánea</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            Para evitar que dos personas reserven el mismo turno al mismo tiempo, el sistema bloquea momentáneamente el horario seleccionado por fracciones de segundo hasta confirmar la transacción de manera exitosa.
+          </p>
+        </div>
+
+        <!-- Reintentos inteligentes de notificaciones -->
+        <div class="card">
+          <h3 class="card-title">8. Reintentos inteligentes de notificaciones</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            Si la red móvil o el correo fallan, el sistema retiene el aviso en una cola de espera y reintenta el envío de forma espaciada y automática hasta lograrlo, o avisa a la administración si la falla persiste.
+          </p>
+        </div>
+
+        <!-- Búsqueda segura de información -->
+        <div class="card">
+          <h3 class="card-title">9. Búsqueda segura de información</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            El sistema busca usuarios empleando códigos de referencia intermedios, lo que permite localizar la información de los turnos rápidamente sin necesidad de descifrar o exponer la base de datos general.
+          </p>
+        </div>
+
+        <!-- Privacidad en registros técnicos de funcionamiento -->
+        <div class="card">
+          <h3 class="card-title">10. Privacidad en registros técnicos de funcionamiento</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            Las bitácoras de funcionamiento interno que registran fallas del servidor tienen prohibido almacenar documentos, correos o teléfonos, utilizando en su lugar identificadores genéricos y anónimos.
+          </p>
+        </div>
+
+        <!-- Protección contra inyección de código -->
+        <div class="card">
+          <h3 class="card-title">11. Protección contra inyección de código</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            Toda información ingresada en los formularios del sistema es validada y purificada de forma automática antes de procesarse, evitando que se puedan inyectar comandos dañinos en la base de datos municipal.
+          </p>
+        </div>
+
+        <!-- Control de velocidad de solicitudes -->
+        <div class="card">
+          <h3 class="card-title">12. Control de velocidad de solicitudes</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            El servidor cuenta con un sistema de límite de velocidad que restringe la cantidad de peticiones consecutivas desde una misma dirección de red, evitando sobrecargas de tráfico y bloqueando accesos automatizados sospechosos.
+          </p>
+        </div>
+
+        <!-- Política de seguridad de contenido (CSP) -->
+        <div class="card">
+          <h3 class="card-title">13. Política de seguridad de contenido (CSP)</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            El navegador tiene prohibido cargar código, fuentes o imágenes desde sitios web no autorizados, previniendo inyecciones de código malicioso o suplantaciones.
+          </p>
+        </div>
+
+        <!-- Sanitización de textos dinámicos -->
+        <div class="card">
+          <h3 class="card-title">14. Sanitización de textos dinámicos</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            El portal limpia de manera automática cualquier texto enriquecido antes de mostrarlo, evitando la ejecución de código dañino en la pantalla del usuario.
+          </p>
+        </div>
+
+        <!-- Bloqueo de copia en caché de páginas privadas -->
+        <div class="card">
+          <h3 class="card-title">15. Bloqueo de copia en caché de páginas privadas</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            El servidor indica al navegador que no almacene copias locales de las pantallas administrativas o personales, de manera que al usar el botón atrás en computadoras compartidas no se muestren datos personales.
+          </p>
+        </div>
+
+        <!-- Validación de roles en vistas del cliente -->
+        <div class="card">
+          <h3 class="card-title">16. Validación de roles en vistas del cliente</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            Los menús y botones administrativos se ocultan y desactivan en el navegador basándose en el rol del usuario autenticado, impidiendo accesos visuales engañosos.
+          </p>
+        </div>
+
+        <!-- Restricción de consumo de API externo (CORS) -->
+        <div class="card">
+          <h3 class="card-title">17. Restricción de consumo de API externo (CORS)</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            El servidor de la aplicación está configurado para responder peticiones únicamente desde el sitio web oficial de la municipalidad, rechazando cualquier intento de consumo externo.
+          </p>
+        </div>
+
+        <!-- Control de validez y cierre inmediato de sesión -->
+        <div class="card">
+          <h3 class="card-title">18. Control de validez y cierre inmediato de sesión</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            El sistema cuenta con una lista negra temporal en el servidor para invalidar de inmediato las credenciales de sesión en caso de cierres de sesión voluntarios o bloqueos preventivos de cuentas administrativas.
+          </p>
+        </div>
+
+        <!-- Privilegio mínimo de acceso a datos -->
+        <div class="card">
+          <h3 class="card-title">19. Privilegio mínimo de acceso a datos</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            El sistema de turnos opera bajo una cuenta de base de datos restringida que solo posee permisos para realizar las acciones necesarias del servicio, imposibilitando modificaciones estructurales no autorizadas.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Pestaña 4: Servicios Externos -->
+    <section id="services" class="tab-content">
+      <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">Servicios Externos del Sistema</h2>
+        <p style="color: var(--text-secondary); font-size: 0.95rem;">
+          El sistema requiere de los siguientes servicios externos para su correcto funcionamiento:
+        </p>
+      </div>
+
+      <div class="requirements-grid">
+        
+        <!-- API de Meta para WhatsApp -->
+        <div class="card">
+          <h3 class="card-title">API de Meta para WhatsApp</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            Servicio de mensajería paga contratado para el envío automático de notificaciones de turnos, confirmaciones y cancelaciones al número de teléfono celular del ciudadano.
+          </p>
+        </div>
+
+        <!-- Proveedor de Correo Transaccional -->
+        <div class="card">
+          <h3 class="card-title">Proveedor de correo electrónico transaccional</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            Servicio de despacho de correos electrónicos corporativos masivos contratado para garantizar que los ciudadanos reciban sus comprobantes de reserva y planillas PDF adjuntas de forma rápida y segura en sus bandejas de entrada.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Pestaña 5: Propuestas del Cliente -->
+    <section id="proposals" class="tab-content">
+      <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">Propuestas de Cambio</h2>
+        <p style="color: var(--text-secondary); font-size: 0.95rem;">
+          Aquí se consolidan todos los comentarios y requerimientos nuevos sugeridos. Las propuestas se guardan en el directorio portal-cliente/feedback. Puede descargar el archivo consolidado de propuestas.
+        </p>
+      </div>
+
+      <div style="margin-bottom: 1.5rem; display: flex; gap: 0.75rem;">
+        <button class="btn btn-primary" onclick="exportProposalsMarkdown()">
+          Descargar archivo de propuestas
+        </button>
+      </div>
+
+      <!-- Contenedor del Listado de Propuestas -->
+      <div id="proposals-container" class="proposals-list">
+        <!-- Cargado dinámicamente desde el backend local o localStorage si el server no corre -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal Formulario de Propuesta -->
+  <div id="modal-overlay" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Proponer Cambio o Comentario</h3>
+        <button id="modal-close-btn" class="modal-close">&times;</button>
+      </div>
+      <form id="feedback-form">
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Referencia: <span id="modal-req-info" style="font-weight: 600; color: var(--text-main);">-</span>
+        </p>
+        
+        <div class="form-group">
+          <label class="form-label" for="author-field">Su Nombre o Rol</label>
+          <input type="text" id="author-field" class="input-text" style="width:100%;" placeholder="Ej. Cliente Municipalidad" required value="Cliente">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="type-field">Tipo de Propuesta</label>
+          <select id="type-field" class="select-filter" style="width: 100%;">
+            <option value="cambio">Modificación / Cambio a requerimiento existente</option>
+            <option value="nuevo">Nuevo Requerimiento o Funcionalidad no listada</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="comment-field">Comentario / Justificación de la Propuesta</label>
+          <textarea id="comment-field" class="textarea-field" placeholder="Describa el motivo del cambio o el nuevo comportamiento deseado..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="proposed-text-field">Flujo o Texto Sugerido Opcional</label>
+          <textarea id="proposed-text-field" class="textarea-field" placeholder="Texto o especificación para el documento final..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="modal-cancel-btn" class="btn">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Propuesta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Contenedor Toast -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Script Lógico -->
+  <script src="app.js"></script>
+</body>
+</html>

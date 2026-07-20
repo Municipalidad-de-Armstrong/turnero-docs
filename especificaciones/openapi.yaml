@@ -1,0 +1,2740 @@
+openapi: 3.0.3
+info:
+  title: API de Gestión de Turnos — Municipalidad de Armstrong (Turnero)
+  description: |
+    Contrato de la API para el sistema de reserva y gestión de turnos de la Municipalidad de Armstrong.
+    
+    Esta API soporta la autenticación híbrida mediante JWT en cookies HttpOnly (`session_token`) o cabeceras `Authorization: Bearer <token>`.
+    
+    ### Gestión de Errores Uniforme (Problem Details)
+    Las respuestas de error de la API siguen el formato RFC 7807 uniforme:
+    ```json
+    {
+      "detail": "Mensaje legible del error",
+      "code": "CODIGO_ERROR_INTERNO",
+      "timestamp": "2026-07-04T01:21:59Z"
+    }
+    ```
+    Donde `code` identifica de forma única la regla de negocio violada.
+  version: 1.0.0
+  license:
+    name: Propiedad de la Municipalidad de Armstrong
+    url: https://armstrong.gov.ar
+servers:
+  - url: /api/v1
+    description: Servidor de producción / desarrollo API v1
+security:
+  - session_token: []
+  - BearerAuth: []
+paths:
+  /auth/register:
+    post:
+      summary: Registrar un nuevo ciudadano
+      description: Permite registrar un nuevo ciudadano en el sistema. Al registrarse, la cuenta queda en estado `PENDING_VALIDATION` y se debe simular el envío de un email de confirmación.
+      operationId: registerCiudadano
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Registro exitoso. Se ha enviado un correo electrónico para verificar la cuenta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Datos inválidos o de formato incorrecto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: DNI o Email ya registrados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/tokens:
+    post:
+      summary: Iniciar sesión (Crear token)
+      description: Verifica credenciales de usuario (email y contraseña). Retorna el perfil de usuario y establece una cookie HttpOnly con el JWT.
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Inicio de sesión exitoso. Se establece la cookie `session_token`.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: session_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; Path=/; HttpOnly; Secure; SameSite=Strict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Credenciales incorrectas o cuenta inactiva.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Cerrar sesión (Eliminar token)
+      description: Invalida la sesión actual del usuario eliminando la cookie de autenticación.
+      operationId: logout
+      responses:
+        '200':
+          description: Sesión cerrada con éxito. La cookie `session_token` se elimina.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: session_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: Sesión cerrada correctamente.
+        '401':
+          description: No autenticado o sesión inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/password-recovery-tokens:
+    post:
+      summary: Solicitar recuperación de contraseña
+      description: Envía un correo con un enlace temporal y un token de recuperación para los usuarios que olvidaron su contraseña.
+      operationId: createPasswordRecoveryToken
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: ciudadano@armstrong.gov.ar
+      responses:
+        '200':
+          description: Correo de recuperación enviado con éxito (siempre que el correo exista).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: Si el correo está registrado, se ha enviado un token de recuperación.
+        '400':
+          description: Correo electrónico inválido o mal estructurado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/password-resets:
+    post:
+      summary: Restablecer contraseña
+      description: Permite configurar una nueva contraseña utilizando el token enviado por correo electrónico.
+      operationId: applyPasswordReset
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+      responses:
+        '200':
+          description: Contraseña restablecida con éxito.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: Contraseña actualizada correctamente.
+        '400':
+          description: Token inválido, expirado o política de contraseña no cumplida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /usuarios/me:
+    get:
+      summary: Obtener perfil del usuario autenticado
+      description: Retorna la información detallada del usuario correspondiente al token de sesión actual.
+      operationId: getMyProfile
+      responses:
+        '200':
+          description: Datos del perfil del usuario logueado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: No autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Editar datos de contacto
+      description: Permite al usuario autenticado modificar su teléfono y su correo electrónico (el cambio de email requiere confirmación).
+      operationId: updateMyProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+      responses:
+        '200':
+          description: Perfil actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Datos inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: El nuevo email ya se encuentra registrado por otro usuario.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /usuarios:
+    get:
+      summary: Buscar y listar usuarios
+      description: "Permite buscar ciudadanos u otros usuarios en el sistema mediante filtros como DNI, correo electrónico, nombre o rol. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: listUsuarios
+      parameters:
+        - name: dni
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "35123456"
+        - name: email
+          in: query
+          required: false
+          schema:
+            type: string
+            format: email
+            example: "juan.perez@email.com"
+        - name: rol
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [CIUDADANO, ADMINISTRATIVO, ADMINISTRADOR]
+            example: "CIUDADANO"
+      responses:
+        '200':
+          description: Lista de usuarios que coinciden con los criterios de búsqueda.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Parámetros de consulta inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Privilegios insuficientes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /usuarios/me/notificaciones:
+    get:
+      summary: Listar notificaciones del usuario autenticado
+      description: "Retorna las notificaciones generadas en plataforma para el usuario de la sesión actual (avisos de confirmación, cancelación, reprogramación o vencimiento de carnet)."
+      operationId: getMyNotifications
+      parameters:
+        - name: solo_no_leidas
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Lista de notificaciones en plataforma.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificationResponse'
+        '401':
+          description: No autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /usuarios/me/notificaciones/{notificacion_id}:
+    patch:
+      summary: Actualizar estado de notificación
+      description: "Permite marcar una notificación como leída o no leída."
+      operationId: updateNotificationState
+      parameters:
+        - name: notificacion_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 104
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationUpdateRequest'
+      responses:
+        '200':
+          description: Notificación actualizada correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+        '400':
+          description: Datos inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Notificación no encontrada o no pertenece al usuario autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /usuarios/{id}:
+    get:
+      summary: Consultar detalle de un usuario específico
+      description: "Retorna la información del usuario por ID. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: getUserById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Datos del usuario solicitado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '403':
+          description: Privilegios insuficientes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Usuario no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/administrativos:
+    get:
+      summary: Listar usuarios con rol administrativo
+      description: "Permite listar todos los usuarios con rol de Administrativo. Privilegios requeridos: ADMINISTRADOR."
+      operationId: listAdministrativos
+      responses:
+        '200':
+          description: Lista de administrativos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '403':
+          description: Privilegios insuficientes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Crear una nueva cuenta administrativa
+      description: "Registra un nuevo usuario con rol ADMINISTRATIVO. Su estado inicial es ACTIVE por defecto. Privilegios requeridos: ADMINISTRADOR."
+      operationId: createAdministrativo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAdminRequest'
+      responses:
+        '201':
+          description: Administrativo creado con éxito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Parámetros inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: DNI o Email ya registrados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/configuracion:
+    get:
+      summary: Obtener parámetros de configuración global del sistema
+      description: "Retorna los valores de las configuraciones del sistema, como días de aviso de vencimiento de carnet o tiempo de anticipación de cancelación. Privilegios requeridos: ADMINISTRADOR."
+      operationId: getGlobalConfig
+      responses:
+        '200':
+          description: Configuración global obtenida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlobalConfigResponse'
+        '401':
+          description: No autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Privilegios insuficientes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Actualizar parámetros de configuración global del sistema
+      description: "Modifica variables del sistema. Privilegios requeridos: ADMINISTRADOR."
+      operationId: updateGlobalConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GlobalConfigUpdateRequest'
+      responses:
+        '200':
+          description: Configuración global actualizada con éxito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlobalConfigResponse'
+        '400':
+          description: Parámetros de configuración inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Privilegios insuficientes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/administrativos/{id}:
+    delete:
+      summary: Eliminar un usuario administrativo
+      description: "Elimina una cuenta administrativa del sistema. Privilegios requeridos: ADMINISTRADOR."
+      operationId: deleteAdministrativo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Administrativo eliminado correctamente.
+        '403':
+          description: Privilegios insuficientes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Usuario no encontrado o no tiene rol administrativo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Modificar cuenta administrativa
+      description: "Permite al administrador modificar los datos de contacto, rol o contraseña de un usuario administrativo. Privilegios requeridos: ADMINISTRADOR."
+      operationId: updateAdministrativo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAdminRequest'
+      responses:
+        '200':
+          description: Cuenta administrativa modificada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Datos inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Privilegios insuficientes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cuenta administrativa no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /areas:
+    get:
+      summary: Obtener listado de áreas municipales
+      description: "Retorna el catálogo de áreas del municipio (ej: Rentas, Tránsito, Obras Particulares). Endpoint público."
+      operationId: listAreas
+      security: []
+      responses:
+        '200':
+          description: Lista de áreas registradas.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AreaResponse'
+        '400':
+          description: Parámetros de consulta incorrectos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Crear una nueva área municipal
+      description: "Registra un área en el municipio. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: createArea
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AreaCreateRequest'
+      responses:
+        '201':
+          description: Área creada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AreaResponse'
+        '400':
+          description: Datos inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Ya existe un área con ese nombre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /areas/{area_id}:
+    patch:
+      summary: Modificar un área municipal
+      description: "Permite actualizar el nombre o la descripción de un área municipal existente. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: updateArea
+      parameters:
+        - name: area_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AreaUpdateRequest'
+      responses:
+        '200':
+          description: Área modificada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AreaResponse'
+        '400':
+          description: Datos inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Privilegios insuficientes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Área no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Ya existe otra área con ese nombre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Dar de baja una área municipal
+      description: "Elimina o inactiva lógicamente un área municipal. Privilegios requeridos: ADMINISTRADOR."
+      operationId: deleteArea
+      parameters:
+        - name: area_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Área dada de baja correctamente.
+        '401':
+          description: No autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Privilegios insuficientes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Área no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /areas/{area_id}/tramites:
+    get:
+      summary: Listar trámites asociados a un área
+      description: Retorna todos los trámites que corresponden al ID del área provisto. Endpoint público.
+      operationId: listTramitesByArea
+      security: []
+      parameters:
+        - name: area_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de trámites del área.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TramiteResponse'
+        '404':
+          description: Área no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tramites:
+    get:
+      summary: Listar todos los trámites
+      description: Retorna el catálogo de trámites completo del municipio, con opción a filtrar por nombre o área. Endpoint público.
+      operationId: listTramites
+      security: []
+      parameters:
+        - name: area_id
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de trámites.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TramiteResponse'
+        '400':
+          description: Parámetros de búsqueda o filtros inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Crear un nuevo trámite
+      description: "Registra un trámite y lo asocia a un área. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: createTramite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TramiteCreateRequest'
+      responses:
+        '201':
+          description: Trámite creado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TramiteResponse'
+        '400':
+          description: Área no válida o parámetros incorrectos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tramites/{tramite_id}:
+    get:
+      summary: Detalle de un trámite específico
+      description: Retorna la información completa de un trámite incluyendo sus requisitos y variantes. Endpoint público.
+      operationId: getTramiteDetails
+      security: []
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalle del trámite.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TramiteDetailResponse'
+        '404':
+          description: Trámite no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Modificar la definición de un trámite
+      description: "Permite actualizar el nombre, descripción, documentación requerida, emisión de carnet y límite diario de sobreturnos. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: updateTramite
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TramiteUpdateRequest'
+      responses:
+        '200':
+          description: Trámite modificado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TramiteResponse'
+        '404':
+          description: Trámite no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Dar de baja un trámite
+      description: "Inactiva o elimina un trámite del catálogo municipal. Privilegios requeridos: ADMINISTRADOR."
+      operationId: deleteTramite
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 12
+      responses:
+        '204':
+          description: Trámite dado de baja correctamente.
+        '401':
+          description: No autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Privilegios insuficientes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Trámite no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tramites/{tramite_id}/variantes:
+    post:
+      summary: Crear una variante para un trámite
+      description: "Agrega una sub-tipificación de atención con una duración específica (en minutos) a un trámite existente. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: createVariante
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VarianteCreateRequest'
+      responses:
+        '201':
+          description: Variante creada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VarianteResponse'
+        '404':
+          description: Trámite no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /variantes/{variante_id}:
+    patch:
+      summary: Modificar una variante
+      description: "Permite actualizar el nombre, la descripción o la duración en minutos de una variante. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: updateVariante
+      parameters:
+        - name: variante_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VarianteUpdateRequest'
+      responses:
+        '200':
+          description: Variante actualizada con éxito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VarianteResponse'
+        '404':
+          description: Variante no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Eliminar una variante
+      description: "Elimina lógicamente o físicamente una variante del catálogo. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: deleteVariante
+      parameters:
+        - name: variante_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Variante eliminada correctamente.
+        '404':
+          description: Variante no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tramites/{tramite_id}/agenda-configuracion:
+    get:
+      summary: Obtener la configuración semanal de la agenda de atención de un trámite
+      description: "Retorna la lista de horarios estructurados de atención semanal por día de la semana. Privilegios requeridos: CIUDADANO, ADMINISTRATIVO, ADMINISTRADOR."
+      operationId: getAgendaConfig
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Configuración de agenda obtenida.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgendaConfigResponse'
+        '404':
+          description: Trámite no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Crear o sobrescribir la configuración de agenda semanal para un trámite
+      description: "Registra el cronograma semanal indicando días, rangos de horas de atención y la capacidad de ciudadanos que se pueden atender en paralelo. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: saveAgendaConfig
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/AgendaConfigSaveItem'
+      responses:
+        '200':
+          description: Configuración de agenda guardada con éxito.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgendaConfigResponse'
+        '400':
+          description: Rango horario inconsistente o formato de hora erróneo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Trámite no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tramites/{tramite_id}/disponibilidad:
+    get:
+      summary: Obtener bloques horarios disponibles para reservar
+      description: Calcula los intervalos de disponibilidad horaria para un trámite y una lista de variantes específica, aplicando el cálculo de capacidad simultánea en una fecha dada.
+      operationId: getDisponibilidad
+      security: []
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: fecha
+          in: query
+          required: true
+          description: Fecha para la cual consultar disponibilidad (formato YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+        - name: variante_ids
+          in: query
+          required: true
+          description: Lista de IDs de variantes a reservar para calcular la duración total del bloque.
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: integer
+      responses:
+        '200':
+          description: Lista de bloques de tiempo disponibles.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BloqueDisponibilidad'
+        '400':
+          description: Falta de variantes o fecha con formato erróneo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Trámite o variantes no encontrados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tramites/{tramite_id}/primer-turno-disponible:
+    get:
+      summary: Obtener el primer turno disponible automáticamente
+      description: Algoritmo que busca de forma secuencial (máximo 30 días) y devuelve el primer bloque libre que tenga cupo para las variantes y el trámite provisto.
+      operationId: getFirstAvailableSlot
+      security: []
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: variante_ids
+          in: query
+          required: true
+          description: Variantes a reservar.
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: integer
+      responses:
+        '200':
+          description: Primer bloque de turno disponible encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BloqueDisponibilidad'
+        '404':
+          description: No hay disponibilidad dentro de la ventana de 30 días, o el trámite no existe.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /turnos:
+    get:
+      summary: Listar turnos con filtros
+      description: |
+        Retorna la lista de turnos y sobreturnos del sistema.
+        - Si el usuario es un **Ciudadano**, retorna únicamente sus turnos.
+        - Si el usuario es **Administrativo** o **Administrador**, permite filtrar por fecha, área, estado, y si es sobreturno.
+      operationId: listTurnos
+      parameters:
+        - name: fecha_desde
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: fecha_hasta
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: area_id
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [RESERVADO, COMPLETO, INCOMPLETO, AUSENTE, CANCELADO]
+        - name: es_sobreturno
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Lista de turnos obtenidos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TurnoResponse'
+        '401':
+          description: No autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Privilegios insuficientes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Reservar un turno regular
+      description: |
+        Registra una nueva reserva de turno regular para un bloque horario específico.
+        - El sistema calcula la duración total sumando la duración de las variantes (`duracion_total`).
+        - Valida el rango de agenda del día correspondiente y el cupo simultáneo del trámite.
+        - Utiliza un mecanismo de concurrencia optimista/pesimista para evitar colisiones.
+        - Si es llamado por un Administrativo, debe incluir la propiedad `ciudadano_id` para asociarlo al ciudadano (puede registrarse simultáneamente).
+      operationId: createTurno
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TurnoCreateRequest'
+      responses:
+        '201':
+          description: Turno reservado con éxito. Se dispara la notificación por email y WhatsApp.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TurnoResponse'
+        '400':
+          description: "Parámetros inválidos o error de validación de disponibilidad (ej: agenda inactiva)."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflicto de concurrencia. El horario seleccionado ya no tiene cupo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /turnos/sobreturno:
+    post:
+      summary: Cargar un sobreturno (solo administrativos)
+      description: |
+        Permite a un Administrativo cargar un sobreturno asignado a una fecha específica fuera de los intervalos de la agenda regular.
+        - El sobreturno se asigna a una prioridad (Alta, Media, Baja).
+        - Se valida que no se supere el límite diario de sobreturnos definido para el trámite.
+        - Al listarse para los operadores, la cola diaria se ordena por prioridad y fecha de creación.
+      operationId: createSobreturno
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SobreturnoCreateRequest'
+      responses:
+        '201':
+          description: Sobretorno registrado con éxito. Se notifica al ciudadano.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TurnoResponse'
+        '400':
+          description: Límite diario de sobreturnos alcanzado para esta fecha, o parámetros inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Acceso denegado (rol no administrativo).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /turnos/{turno_id}:
+    get:
+      summary: Detalle de un turno
+      description: Retorna la información completa de un turno por su ID UUID.
+      operationId: getTurnoById
+      parameters:
+        - name: turno_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalle del turno obtenido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TurnoResponse'
+        '404':
+          description: Turno no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Actualizar o reprogramar un turno (incluye Cancelación y Cierre de Trámite)
+      description: |
+        Realiza una actualización parcial del turno. Representa cualquier cambio de estado o datos:
+        - **Reprogramación:** Modifica `fecha_hora_inicio` y/o `variante_ids` (sujeto a la regla de las 24 horas previas para el Ciudadano).
+        - **Cancelación:** Cambia `estado` a `CANCELADO`. Si lo realiza un administrativo, es obligatorio proveer `motivo_cancelacion`.
+        - **Cierre del Trámite:** El Administrativo cambia el `estado` a `COMPLETO`, `INCOMPLETO` o `AUSENTE`. 
+          - Si es `INCOMPLETO`, requiere `resultado_comentario`.
+          - Si es `COMPLETO` y el trámite `emite_carnet` es true, requiere `numero_carnet` y `fecha_vencimiento_carnet` para emitir el carnet local de forma simultánea.
+      operationId: updateTurno
+      parameters:
+        - name: turno_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TurnoUpdateRequest'
+      responses:
+        '200':
+          description: Turno modificado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TurnoResponse'
+        '400':
+          description: Restricción de tiempo violada (reprogramación tardía para ciudadano) o datos incorrectos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflicto de disponibilidad en el nuevo horario.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /turnos/{turno_id}/planilla:
+    get:
+      summary: Obtener o descargar la planilla del trámite
+      description: Retorna la URL de descarga o el binario de la planilla con los requisitos e información para el turno reservado.
+      operationId: getPlanillaTurno
+      parameters:
+        - name: turno_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Planilla en formato descargable o JSON descriptivo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  download_url:
+                    type: string
+                    format: uri
+                    example: https://armstrong.gov.ar/downloads/planilla_turno_12345.pdf
+                  tramite_nombre:
+                    type: string
+                    example: Licencia de Conducir
+                  documentacion_requerida:
+                    type: string
+                    example: Llevar DNI original, Constancia de grupo sanguíneo, etc.
+        '404':
+          description: Turno no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /carnets:
+    get:
+      summary: Listar carnets emitidos
+      description: Retorna todos los carnets locales vigentes o vencidos del ciudadano. Los administrativos pueden filtrar por DNI de cualquier ciudadano.
+      operationId: listCarnets
+      parameters:
+        - name: dni_ciudadano
+          in: query
+          required: false
+          description: DNI de un ciudadano específico (sólo administrativo/administrador).
+          schema:
+            type: string
+        - name: solo_activos
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Listado de carnets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CarnetResponse'
+        '403':
+          description: Privilegios insuficientes para buscar carnets ajenos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /carnets/{carnet_id}:
+    patch:
+      summary: Modificar estado de vigencia del carnet
+      description: "Permite activar o desactivar (revocar) un carnet municipal local. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: updateCarnetState
+      parameters:
+        - name: carnet_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - activo
+              properties:
+                activo:
+                  type: boolean
+                  description: Indica si el carnet sigue vigente.
+      responses:
+        '200':
+          description: Carnet modificado con éxito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarnetResponse'
+        '404':
+          description: Carnet no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auditoria:
+    get:
+      summary: Consultar log de auditoría
+      description: "Retorna el listado cronológico de las acciones operativas realizadas por usuarios internos. Privilegios requeridos: ADMINISTRADOR."
+      operationId: getAuditoriaLogs
+      parameters:
+        - name: limite
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 100
+        - name: usuario_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lista de eventos de auditoría.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditoriaResponse'
+        '403':
+          description: Privilegios insuficientes (requiere ADMINISTRADOR).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tramites/{tramite_id}/documentos:
+    get:
+      summary: Obtener los documentos descargables de un trámite
+      description: Retorna la lista de archivos adicionales/formularios oficiales que el ciudadano debe descargar antes de asistir. Endpoint público.
+      operationId: getTramiteDocumentos
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de documentos del trámite.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TramiteDocumentoResponse'
+        '404':
+          description: Trámite no encontrado.
+    post:
+      summary: Subir un documento descargable (formulario) para un trámite
+      description: "Permite al administrativo subir un archivo físico (multipart/form-data) que se guardará en el servidor. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: uploadTramiteDocumento
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - nombre
+                - archivo
+              properties:
+                nombre:
+                  type: string
+                  description: Nombre descriptivo del formulario.
+                  example: "Formulario Declaración Jurada"
+                archivo:
+                  type: string
+                  format: binary
+                  description: El archivo físico a subir (PDF, Word, etc.).
+      responses:
+        '201':
+          description: Archivo subido y asociado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TramiteDocumentoResponse'
+        '400':
+          description: Archivo inválido o supera límite de tamaño.
+        '404':
+          description: Trámite no encontrado.
+
+  /tramites/{tramite_id}/documentos/{documento_id}:
+    delete:
+      summary: Eliminar un documento asociado a un trámite
+      description: "Elimina el documento y borra el archivo físico correspondiente en el servidor. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: deleteTramiteDocumento
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: documento_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Documento eliminado con éxito. No retorna contenido.
+        '404':
+          description: Documento o Trámite no encontrado.
+
+  /tramites/{tramite_id}/enlaces:
+    get:
+      summary: Obtener los enlaces útiles de un trámite
+      description: Retorna la lista de hipervínculos externos asociados al trámite. Endpoint público.
+      operationId: getTramiteEnlaces
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de enlaces del trámite.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TramiteEnlaceResponse'
+        '404':
+          description: Trámite no encontrado.
+    post:
+      summary: Crear y asociar un enlace útil para un trámite
+      description: "Permite al administrativo asociar una dirección web externa con una descripción descriptiva. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: createTramiteEnlace
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TramiteEnlaceCreateRequest'
+      responses:
+        '201':
+          description: Enlace creado y asociado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TramiteEnlaceResponse'
+        '404':
+          description: Trámite no encontrado.
+
+  /tramites/{tramite_id}/enlaces/{enlace_id}:
+    delete:
+      summary: Eliminar un enlace útil asociado a un trámite
+      description: "Elimina la asociación del enlace. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: deleteTramiteEnlace
+      parameters:
+        - name: tramite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: enlace_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Enlace desasociado con éxito. No retorna contenido.
+        '404':
+          description: Enlace o Trámite no encontrado.
+
+  /reportes-usurpacion:
+    post:
+      summary: Crear un reporte de usurpación de DNI
+      description: Permite a un ciudadano no autenticado reportar que su DNI ha sido registrado en el sistema por un tercero sin autorización.
+      operationId: createReporteUsurpacion
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReporteUsurpacionCreateRequest'
+      responses:
+        '201':
+          description: Reporte enviado con éxito. Será evaluado por el personal municipal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReporteUsurpacionResponse'
+        '400':
+          description: Datos inválidos.
+
+  /admin/reportes-usurpacion:
+    get:
+      summary: Listar reportes de usurpación de DNI
+      description: "Obtiene las denuncias de usurpación registradas, ordenadas por fecha de creación. Permite filtrar por estado. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: getReportesUsurpacion
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [PENDIENTE, EN_PROCESO, RESUELTO, RECHAZADO]
+      responses:
+        '200':
+          description: Lista de reportes obtenida con éxito.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReporteUsurpacionResponse'
+        '403':
+          description: Acceso denegado.
+
+  /admin/reportes-usurpacion/{reporte_id}:
+    patch:
+      summary: Gestionar y resolver un reporte de usurpación
+      description: "Permite al administrativo actualizar el estado de una denuncia (ej: a RESUELTO o RECHAZADO) e ingresar un comentario final. Privilegios requeridos: ADMINISTRATIVO o ADMINISTRADOR."
+      operationId: resolveReporteUsurpacion
+      parameters:
+        - name: reporte_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReporteUsurpacionUpdateRequest'
+      responses:
+        '200':
+          description: Reporte actualizado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReporteUsurpacionResponse'
+        '404':
+          description: Reporte no encontrado.
+
+components:
+  securitySchemes:
+    session_token:
+      type: apiKey
+      in: cookie
+      name: session_token
+      description: JWT cookie de sesión HttpOnly.
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token de autenticación de portador para desarrollo y pruebas directas.
+
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - dni
+        - email
+        - telefono
+        - nombre
+        - apellido
+        - password
+      properties:
+        dni:
+          type: string
+          pattern: '^\d{7,10}$'
+          example: "35123456"
+        email:
+          type: string
+          format: email
+          example: "juan.perez@email.com"
+        telefono:
+          type: string
+          pattern: '^\+?\d{9,15}$'
+          example: "+543471654321"
+        nombre:
+          type: string
+          minLength: 2
+          example: "Juan"
+        apellido:
+          type: string
+          minLength: 2
+          example: "Pérez"
+        password:
+          type: string
+          minLength: 8
+          example: "Contrasenia123!"
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "juan.perez@email.com"
+        password:
+          type: string
+          format: password
+          example: "Contrasenia123!"
+
+    LoginResponse:
+      type: object
+      required:
+        - user
+        - token
+      properties:
+        user:
+          $ref: '#/components/schemas/UserResponse'
+        token:
+          type: string
+          description: Token JWT generado para la sesión.
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    UserResponse:
+      type: object
+      required:
+        - id
+        - dni
+        - email
+        - telefono
+        - nombre
+        - apellido
+        - rol
+        - estado
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "d3b07384-d113-4956-a57e-e1c8d76d9e03"
+        dni:
+          type: string
+          example: "35123456"
+        email:
+          type: string
+          format: email
+          example: "juan.perez@email.com"
+        telefono:
+          type: string
+          example: "+543471654321"
+        nombre:
+          type: string
+          example: "Juan"
+        apellido:
+          type: string
+          example: "Pérez"
+        rol:
+          type: string
+          enum: [CIUDADANO, ADMINISTRATIVO, ADMINISTRADOR]
+          example: "CIUDADANO"
+        estado:
+          type: string
+          enum: [PENDING_VALIDATION, ACTIVE, INACTIVE]
+          example: "ACTIVE"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-07-04T01:21:59Z"
+
+    UserUpdateRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "juan.nuevo@email.com"
+        telefono:
+          type: string
+          pattern: '^\+?\d{9,15}$'
+          example: "+543471999999"
+
+    CreateAdminRequest:
+      type: object
+      required:
+        - dni
+        - email
+        - telefono
+        - nombre
+        - apellido
+        - password
+      properties:
+        dni:
+          type: string
+          example: "20456789"
+        email:
+          type: string
+          format: email
+          example: "admin.operaciones@armstrong.gov.ar"
+        telefono:
+          type: string
+          example: "+543471654111"
+        nombre:
+          type: string
+          example: "Carlos"
+        apellido:
+          type: string
+          example: "Gómez"
+        password:
+          type: string
+          minLength: 8
+          example: "AdminSecurePass2026!"
+
+    PasswordResetRequest:
+      type: object
+      required:
+        - token
+        - new_password
+      properties:
+        token:
+          type: string
+          example: "abc123xyz_token"
+        new_password:
+          type: string
+          minLength: 8
+          example: "NuevaContrasenia1!"
+
+    AreaResponse:
+      type: object
+      required:
+        - id
+        - nombre
+        - created_at
+      properties:
+        id:
+          type: integer
+          example: 1
+        nombre:
+          type: string
+          example: "Rentas"
+        descripcion:
+          type: string
+          nullable: true
+          example: "Área encargada de tributaciones, tasas y patentes."
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-07-04T01:21:59Z"
+
+    AreaCreateRequest:
+      type: object
+      required:
+        - nombre
+      properties:
+        nombre:
+          type: string
+          minLength: 3
+          example: "Tránsito"
+        descripcion:
+          type: string
+          example: "Módulo de emisión de licencias de conducir y seguridad vial."
+
+    TramiteResponse:
+      type: object
+      required:
+        - id
+        - area_id
+        - nombre
+        - documentacion_requerida
+        - emite_carnet
+        - limite_sobreturnos_diarios
+        - created_at
+      properties:
+        id:
+          type: integer
+          example: 12
+        area_id:
+          type: integer
+          example: 1
+        nombre:
+          type: string
+          example: "Renovación Carnet de Conducir B1"
+        descripcion:
+          type: string
+          nullable: true
+          example: "Trámite anual para la renovación de licencia particular categoría B1."
+        documentacion_requerida:
+          type: string
+          example: |
+            - DNI original y copia.
+            - Carnet anterior.
+            - Examen psicofísico aprobado.
+        requerimientos_previos:
+          type: string
+          nullable: true
+          example: |
+            - Abonar boleta nacional del CENAT (llevar impresa).
+            - Realizar curso vial en el portal web de la provincia.
+        emite_carnet:
+          type: boolean
+          example: true
+        limite_sobreturnos_diarios:
+          type: integer
+          nullable: true
+          example: 5
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-07-04T01:21:59Z"
+
+    TramiteCreateRequest:
+      type: object
+      required:
+        - area_id
+        - nombre
+        - documentacion_requerida
+      properties:
+        area_id:
+          type: integer
+          example: 1
+        nombre:
+          type: string
+          example: "Pago de Patentes"
+        descripcion:
+          type: string
+          example: "Liquidación y cobro de patente automotor."
+        documentacion_requerida:
+          type: string
+          example: "Llevar título del automotor y último comprobante de pago."
+        requerimientos_previos:
+          type: string
+          description: Formato Markdown. Acciones obligatorias previas al turno.
+          example: "Ingresar a www.rentas.gob.ar y obtener liquidación de deuda previa."
+        emite_carnet:
+          type: boolean
+          default: false
+        limite_sobreturnos_diarios:
+          type: integer
+          default: 5
+
+    TramiteDetailResponse:
+      type: object
+      required:
+        - id
+        - area_id
+        - nombre
+        - documentacion_requerida
+        - emite_carnet
+        - limite_sobreturnos_diarios
+        - variantes
+        - created_at
+      properties:
+        id:
+          type: integer
+          example: 12
+        area_id:
+          type: integer
+          example: 1
+        nombre:
+          type: string
+          example: "Renovación Carnet de Conducir B1"
+        descripcion:
+          type: string
+          nullable: true
+          example: "Renovación particular."
+        documentacion_requerida:
+          type: string
+          example: "Requisitos."
+        requerimientos_previos:
+          type: string
+          nullable: true
+          example: "Acciones previas."
+        emite_carnet:
+          type: boolean
+          example: true
+        limite_sobreturnos_diarios:
+          type: integer
+          nullable: true
+          example: 5
+        variantes:
+          type: array
+          items:
+            $ref: '#/components/schemas/VarianteResponse'
+        documentos:
+          type: array
+          items:
+            $ref: '#/components/schemas/TramiteDocumentoResponse'
+        enlaces:
+          type: array
+          items:
+            $ref: '#/components/schemas/TramiteEnlaceResponse'
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-07-04T01:21:59Z"
+
+    TramiteUpdateRequest:
+      type: object
+      properties:
+        nombre:
+          type: string
+          example: "Renovación Carnet de Conducir B1 (Modificado)"
+        descripcion:
+          type: string
+          example: "Nueva descripción."
+        documentacion_requerida:
+          type: string
+          example: "Nueva documentación requerida."
+        requerimientos_previos:
+          type: string
+          example: "Nuevos requerimientos previos."
+        emite_carnet:
+          type: boolean
+          example: true
+        limite_sobreturnos_diarios:
+          type: integer
+          nullable: true
+          example: 10
+
+    VarianteResponse:
+      type: object
+      required:
+        - id
+        - tramite_id
+        - nombre
+        - duracion_minutos
+      properties:
+        id:
+          type: integer
+          example: 5
+        tramite_id:
+          type: integer
+          example: 12
+        nombre:
+          type: string
+          example: "Examen Teórico"
+        descripcion:
+          type: string
+          nullable: true
+          example: "Instancia teórica de evaluación de normas viales."
+        duracion_minutos:
+          type: integer
+          example: 30
+
+    VarianteCreateRequest:
+      type: object
+      required:
+        - nombre
+        - duracion_minutos
+      properties:
+        nombre:
+          type: string
+          example: "Curso Obligatorio"
+        descripcion:
+          type: string
+          example: "Clase presencial introductoria."
+        duracion_minutos:
+          type: integer
+          minimum: 1
+          example: 60
+
+    VarianteUpdateRequest:
+      type: object
+      properties:
+        nombre:
+          type: string
+          example: "Examen Teórico (Express)"
+        descripcion:
+          type: string
+          example: "Evaluación abreviada."
+        duracion_minutos:
+          type: integer
+          minimum: 1
+          example: 15
+
+    AgendaConfigResponse:
+      type: object
+      required:
+        - id
+        - tramite_id
+        - dia_semana
+        - hora_inicio
+        - hora_fin
+        - capacidad_simultanea
+        - activo
+      properties:
+        id:
+          type: integer
+          example: 45
+        tramite_id:
+          type: integer
+          example: 12
+        dia_semana:
+          type: integer
+          description: "0=Domingo, 1=Lunes, ..., 6=Sábado"
+          minimum: 0
+          maximum: 6
+          example: 1
+        hora_inicio:
+          type: string
+          pattern: '^\d{2}:\d{2}$'
+          example: "08:00"
+        hora_fin:
+          type: string
+          pattern: '^\d{2}:\d{2}$'
+          example: "12:00"
+        capacidad_simultanea:
+          type: integer
+          minimum: 1
+          example: 2
+        activo:
+          type: boolean
+          example: true
+
+    AgendaConfigSaveItem:
+      type: object
+      required:
+        - dia_semana
+        - hora_inicio
+        - hora_fin
+        - capacidad_simultanea
+      properties:
+        dia_semana:
+          type: integer
+          minimum: 0
+          maximum: 6
+          example: 1
+        hora_inicio:
+          type: string
+          pattern: '^\d{2}:\d{2}$'
+          example: "08:00"
+        hora_fin:
+          type: string
+          pattern: '^\d{2}:\d{2}$'
+          example: "12:00"
+        capacidad_simultanea:
+          type: integer
+          minimum: 1
+          example: 2
+        activo:
+          type: boolean
+          default: true
+
+    BloqueDisponibilidad:
+      type: object
+      required:
+        - fecha_hora_inicio
+        - fecha_hora_fin
+        - disponible
+      properties:
+        fecha_hora_inicio:
+          type: string
+          format: date-time
+          example: "2026-07-06T08:30:00Z"
+        fecha_hora_fin:
+          type: string
+          format: date-time
+          example: "2026-07-06T09:15:00Z"
+        disponible:
+          type: boolean
+          example: true
+
+    TurnoResponse:
+      type: object
+      required:
+        - id
+        - ciudadano_id
+        - tramite_id
+        - fecha_hora_inicio
+        - fecha_hora_fin
+        - estado
+        - es_sobreturno
+        - variantes
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "a8b792ff-4c28-4e3a-939e-49b8ef6c7438"
+        ciudadano_id:
+          type: string
+          format: uuid
+          example: "d3b07384-d113-4956-a57e-e1c8d76d9e03"
+        ciudadano_nombre_completo:
+          type: string
+          example: "Juan Pérez"
+        tramite_id:
+          type: integer
+          example: 12
+        tramite_nombre:
+          type: string
+          example: "Renovación Carnet de Conducir B1"
+        fecha_hora_inicio:
+          type: string
+          format: date-time
+          example: "2026-07-06T08:30:00Z"
+        fecha_hora_fin:
+          type: string
+          format: date-time
+          example: "2026-07-06T09:15:00Z"
+        estado:
+          type: string
+          enum: [RESERVADO, COMPLETO, INCOMPLETO, AUSENTE, CANCELADO]
+          example: "RESERVADO"
+        es_sobreturno:
+          type: boolean
+          example: false
+        sobreturno_prioridad:
+          type: string
+          enum: [ALTA, MEDIA, BAJA]
+          nullable: true
+          example: null
+        motivo_cancelacion:
+          type: string
+          nullable: true
+          example: null
+        cancelado_por_id:
+          type: string
+          format: uuid
+          nullable: true
+          example: null
+        resultado_comentario:
+          type: string
+          nullable: true
+          example: null
+        variantes:
+          type: array
+          items:
+            $ref: '#/components/schemas/VarianteResponse'
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-07-05T14:00:00Z"
+
+    TurnoCreateRequest:
+      type: object
+      required:
+        - tramite_id
+        - variante_ids
+        - fecha_hora_inicio
+      properties:
+        tramite_id:
+          type: integer
+          example: 12
+        variante_ids:
+          type: array
+          items:
+            type: integer
+          example: [5, 6]
+        fecha_hora_inicio:
+          type: string
+          format: date-time
+          example: "2026-07-06T08:30:00Z"
+        ciudadano_id:
+          type: string
+          format: uuid
+          description: Opcional. Sólo puede ser provisto por un Administrativo para registrar a nombre de un ciudadano (presencial o telefónico).
+          example: "d3b07384-d113-4956-a57e-e1c8d76d9e03"
+        datos_registro_inmediato:
+          type: object
+          description: Opcional. Permite registrar un ciudadano simultáneamente si es cargado por un Administrativo y el ciudadano no posee cuenta previa.
+          required:
+            - dni
+            - email
+            - telefono
+            - nombre
+            - apellido
+          properties:
+            dni:
+              type: string
+              example: "39876543"
+            email:
+              type: string
+              format: email
+              example: "ciudadano.nuevo@email.com"
+            telefono:
+              type: string
+              example: "+543471000111"
+            nombre:
+              type: string
+              example: "Ana"
+            apellido:
+              type: string
+              example: "Sánchez"
+
+    SobreturnoCreateRequest:
+      type: object
+      required:
+        - tramite_id
+        - fecha
+        - sobreturno_prioridad
+      properties:
+        tramite_id:
+          type: integer
+          example: 12
+        fecha:
+          type: string
+          format: date
+          example: "2026-07-06"
+        sobreturno_prioridad:
+          type: string
+          enum: [ALTA, MEDIA, BAJA]
+          example: "ALTA"
+        ciudadano_id:
+          type: string
+          format: uuid
+          description: Requerido si el ciudadano ya está registrado.
+          example: "d3b07384-d113-4956-a57e-e1c8d76d9e03"
+        datos_registro_inmediato:
+          type: object
+          description: Permite registrar al ciudadano simultáneamente si no posee cuenta previa.
+          properties:
+            dni:
+              type: string
+              example: "39876543"
+            email:
+              type: string
+              format: email
+              example: "ciudadano.nuevo@email.com"
+            telefono:
+              type: string
+              example: "+543471000111"
+            nombre:
+              type: string
+              example: "Ana"
+            apellido:
+              type: string
+              example: "Sánchez"
+
+    TurnoUpdateRequest:
+      type: object
+      properties:
+        # Campos de Reprogramación
+        fecha_hora_inicio:
+          type: string
+          format: date-time
+          example: "2026-07-07T09:00:00Z"
+        variante_ids:
+          type: array
+          items:
+            type: integer
+          example: [5]
+        # Campos de Transición de Estado y Cierre de Trámite
+        estado:
+          type: string
+          enum: [RESERVADO, COMPLETO, INCOMPLETO, AUSENTE, CANCELADO]
+          description: Nuevo estado operativo del turno.
+          example: "CANCELADO"
+        motivo_cancelacion:
+          type: string
+          description: Requerido si el estado se cambia a CANCELADO por parte de un Administrativo.
+          example: "Ciudadano solicitó la baja por imposibilidad de asistencia."
+        resultado_comentario:
+          type: string
+          description: Requerido si el estado se cambia a INCOMPLETO.
+          example: "No presentó constancia de grupo sanguíneo."
+        numero_carnet:
+          type: string
+          description: Requerido si el estado se cambia a COMPLETO y el trámite tiene emite_carnet = true.
+          example: "CARNET-TR-129845"
+        fecha_vencimiento_carnet:
+          type: string
+          format: date
+          description: Requerido si el estado se cambia a COMPLETO y el trámite tiene emite_carnet = true.
+          example: "2027-07-06"
+
+    CarnetResponse:
+      type: object
+      required:
+        - id
+        - ciudadano_id
+        - tramite_id
+        - numero_carnet
+        - fecha_emision
+        - fecha_vencimiento
+        - activo
+      properties:
+        id:
+          type: integer
+          example: 87
+        ciudadano_id:
+          type: string
+          format: uuid
+          example: "d3b07384-d113-4956-a57e-e1c8d76d9e03"
+        tramite_id:
+          type: integer
+          example: 12
+        numero_carnet:
+          type: string
+          example: "CARNET-TR-129845"
+        fecha_emision:
+          type: string
+          format: date
+          example: "2026-07-06"
+        fecha_vencimiento:
+          type: string
+          format: date
+          example: "2027-07-06"
+        activo:
+          type: boolean
+          example: true
+
+    AuditoriaResponse:
+      type: object
+      required:
+        - id
+        - usuario_id
+        - accion
+        - descripcion
+        - timestamp
+      properties:
+        id:
+          type: integer
+          example: 1045
+        usuario_id:
+          type: string
+          format: uuid
+          example: "e851a7bd-93c4-4b53-b3c4-d102e3b2a2e4"
+        accion:
+          type: string
+          example: "CANCELACION_ADMINISTRATIVA"
+        descripcion:
+          type: string
+          example: "Cancelación forzada del turno a8b792ff-4c28-4e3a-939e-49b8ef6c7438. Motivo: Cambio de horario por asueto municipal."
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-07-05T16:45:00Z"
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+        - code
+        - timestamp
+      properties:
+        detail:
+          type: string
+          description: Descripción legible del error para mostrar al usuario.
+          example: "La ranura de tiempo seleccionada ya no tiene disponibilidad debido a capacidad simultánea."
+        code:
+          type: string
+          description: Código interno único del error técnico o de negocio.
+          example: "ERR_CAPACIDAD_SIMULTANEA_EXCEDIDA"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-07-05T14:32:00Z"
+
+    NotificationResponse:
+      type: object
+      required:
+        - id
+        - usuario_id
+        - titulo
+        - mensaje
+        - leida
+        - created_at
+      properties:
+        id:
+          type: integer
+          example: 104
+        usuario_id:
+          type: string
+          format: uuid
+          example: "d3b07384-d113-4956-a57e-e1c8d76d9e03"
+        titulo:
+          type: string
+          example: "Turno Confirmado"
+        mensaje:
+          type: string
+          example: "Su turno para 'Renovación Carnet de Conducir B1' ha sido reservado para el 2026-07-06T08:30:00Z."
+        leida:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-07-05T14:00:00Z"
+
+    GlobalConfigResponse:
+      type: object
+      required:
+        - anticipacion_cancelacion_horas
+      properties:
+        anticipacion_cancelacion_horas:
+          type: integer
+          description: Tiempo mínimo antes del turno en el cual un ciudadano puede cancelarlo o reprogramarlo.
+          example: 24
+
+    GlobalConfigUpdateRequest:
+      type: object
+      properties:
+        anticipacion_cancelacion_horas:
+          type: integer
+          minimum: 1
+          example: 24
+
+    AreaUpdateRequest:
+      type: object
+      properties:
+        nombre:
+          type: string
+          minLength: 3
+          example: "Seguridad Vial y Tránsito"
+        descripcion:
+          type: string
+          example: "Área unificada de licencias de conducir y controles viales."
+
+    UpdateAdminRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "carlos.nuevo@armstrong.gov.ar"
+        telefono:
+          type: string
+          example: "+543471654222"
+        nombre:
+          type: string
+          example: "Carlos Alberto"
+        apellido:
+          type: string
+          example: "Gómez"
+        password:
+          type: string
+          minLength: 8
+          example: "AdminNuevaContrasenia1!"
+    NotificationUpdateRequest:
+      type: object
+      required:
+        - leida
+      properties:
+        leida:
+          type: boolean
+          description: Establece el estado de lectura de la notificación.
+          example: true
+
+    TramiteDocumentoResponse:
+      type: object
+      required:
+        - id
+        - tramite_id
+        - nombre
+        - ruta_archivo
+        - created_at
+      properties:
+        id:
+          type: integer
+          example: 45
+        tramite_id:
+          type: integer
+          example: 12
+        nombre:
+          type: string
+          example: "Formulario Declaración Jurada"
+        ruta_archivo:
+          type: string
+          example: "/uploads/tramites/12/formulario_dj.pdf"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-07-04T01:21:59Z"
+
+    TramiteEnlaceCreateRequest:
+      type: object
+      required:
+        - descripcion
+        - url
+      properties:
+        descripcion:
+          type: string
+          example: "Consultar multas nacionales"
+        url:
+          type: string
+          format: uri
+          example: "https://multas.cenat.gob.ar"
+
+    TramiteEnlaceResponse:
+      type: object
+      required:
+        - id
+        - tramite_id
+        - descripcion
+        - url
+        - created_at
+      properties:
+        id:
+          type: integer
+          example: 12
+        tramite_id:
+          type: integer
+          example: 12
+        descripcion:
+          type: string
+          example: "Consultar multas nacionales"
+        url:
+          type: string
+          format: uri
+          example: "https://multas.cenat.gob.ar"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-07-04T01:21:59Z"
+
+    ReporteUsurpacionCreateRequest:
+      type: object
+      required:
+        - dni_usurpado
+        - nombre_reportante
+        - apellido_reportante
+        - email_reportante
+        - telefono_reportante
+        - motivo_comentario
+      properties:
+        dni_usurpado:
+          type: string
+          example: "20345678"
+        nombre_reportante:
+          type: string
+          example: "Juan"
+        apellido_reportante:
+          type: string
+          example: "Pérez"
+        email_reportante:
+          type: string
+          format: email
+          example: "juan.perez.real@gmail.com"
+        telefono_reportante:
+          type: string
+          example: "+543471987654"
+        motivo_comentario:
+          type: string
+          example: "Intenté registrarme y figura que mi DNI ya tiene una cuenta activa. Adjunto mis datos para validación."
+
+    ReporteUsurpacionResponse:
+      type: object
+      required:
+        - id
+        - dni_usurpado
+        - nombre_reportante
+        - apellido_reportante
+        - email_reportante
+        - telefono_reportante
+        - motivo_comentario
+        - estado
+        - created_at
+      properties:
+        id:
+          type: integer
+          example: 1
+        dni_usurpado:
+          type: string
+          example: "20345678"
+        nombre_reportante:
+          type: string
+          example: "Juan"
+        apellido_reportante:
+          type: string
+          example: "Pérez"
+        email_reportante:
+          type: string
+          example: "juan.perez.real@gmail.com"
+        telefono_reportante:
+          type: string
+          example: "+543471987654"
+        motivo_comentario:
+          type: string
+          example: "Intenté registrarme y mi DNI figura ocupado."
+        estado:
+          type: string
+          enum: [PENDIENTE, EN_PROCESO, RESUELTO, RECHAZADO]
+          example: "PENDIENTE"
+        resolucion_comentario:
+          type: string
+          nullable: true
+          example: "Se verificó offline y se suspendió la cuenta usurpadora."
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-07-15T12:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2026-07-15T12:00:00Z"
+
+    ReporteUsurpacionUpdateRequest:
+      type: object
+      required:
+        - estado
+      properties:
+        estado:
+          type: string
+          enum: [PENDIENTE, EN_PROCESO, RESUELTO, RECHAZADO]
+          example: "RESUELTO"
+        resolucion_comentario:
+          type: string
+          description: Explicación del administrativo sobre las medidas tomadas.
+          example: "Cuenta usurpadora suspendida. Se liberó el DNI."
+

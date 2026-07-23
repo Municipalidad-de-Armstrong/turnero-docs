@@ -114,6 +114,13 @@ src/
    - Permite al administrativo ingresar un comentario de resolución y cambiar el estado.
    - Provee un botón de acceso directo a la ficha del usuario "usurpador" con opción rápida para suspender o desactivar su cuenta de forma inmediata si se constata la irregularidad.
 
+### 3.2 Patrón Estándar de Tablas y Modales de Lectura (Read-Only Row Click)
+Para mantener la coherencia visual e interactiva en todos los paneles y tablas del sistema:
+- **Interacción por Fila (`onRowClick`):** Hacer clic en cualquier registro/fila de una tabla abre automáticamente su **Modal de Detalle en Solo Lectura (*Read-Only Detail Modal*)**, permitiendo consultar información formateada, variantes y adjuntos sin riesgo de modificación.
+- **Acciones Aisladas (`stopPropagation`):** Los botones de "Editar" y "Eliminar" en la columna de acciones invocan `e.stopPropagation()` para ejecutar sus flujos correspondientes sin activar la apertura del modal de detalle.
+- **Encabezados Limpios:** Los títulos de las tablas se mantienen limpios (ej: *"Áreas Municipales"*, *"Trámites Configurados"*) sin incluir contadores genéricos entre paréntesis ni mensajes orientativos superfluos.
+
+
 ### 3.1 Flujo de Navegación y Persistencia del Stepper de Reserva
 El flujo de reserva interactivo para el ciudadano se implementa como un componente de estado persistente del lado del cliente (con soporte de Zustand o parámetros de búsqueda URL) estructurado de la siguiente forma:
 

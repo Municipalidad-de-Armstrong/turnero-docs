@@ -161,7 +161,7 @@ stateDiagram-v2
 
 ---
 
-### [ ] Slice 4: Catálogo - Variantes, Documentación Markdown, Enlaces y Archivos PDF (`catalog`)
+### [x] Slice 4: Catálogo - Variantes, Documentación Markdown, Enlaces y Archivos PDF (`catalog`)
 *Meta: Asignar variantes de duración a cada trámite, redactar requerimientos en Markdown, configurar enlaces externos y subir archivos PDF de formularios.*
 * **Documentación de Referencia Obligatoria:**
   - [2-catalog.md](../especificaciones/dominios/2-catalog.md#L15-L24) (HU-17: Documentación requerida en Markdown, HU-26: Requerimientos previos, enlaces útiles y adjuntos PDF).
@@ -170,14 +170,15 @@ stateDiagram-v2
   - [openapi.yaml](../especificaciones/openapi.yaml) (Endpoints `/tramites/{id}/variantes`, `/tramites/{id}/documentos`, `/tramites/{id}/enlaces`).
   - [arquitectura-frontend.md](../estandares/arquitectura-frontend.md) (Renderizado y sanitización de Markdown en cliente).
 * **Backend (`turnero_api`):**
-  - [ ] Crear modelos SQLAlchemy `Variante`, `TramiteDocumento` y `TramiteEnlace` con eliminación en cascada y limpieza de archivos en disco.
-  - [ ] Implementar endpoint multipart `POST /admin/tramites/{id}/documentos` para subir archivos PDF/DOCX de formularios al almacenamiento local.
-  - [ ] Implementar endpoints CRUD para Variantes de trámite y Enlaces útiles.
-  - [ ] Escribir tests de integración verificando la carga de adjuntos y la eliminación en cascada.
+  - [x] Crear modelos SQLAlchemy `Variante`, `TramiteDocumento` y `TramiteEnlace` con eliminación en cascada y limpieza de archivos en disco.
+  - [x] Implementar endpoint multipart `POST /admin/tramites/{id}/documentos` para subir archivos PDF/DOCX de formularios al almacenamiento local.
+  - [x] Implementar endpoints CRUD para Variantes de trámite y Enlaces útiles.
+  - [x] Escribir tests de integración verificando la carga de adjuntos y la eliminación en cascada.
 * **Frontend (`turnero`):**
-  - [ ] Añadir a la vista `/admin/tramites` el editor de Markdown para documentación requerida e instrucciones.
-  - [ ] Añadir gestor de variantes de duración por trámite (ej: "Examen Teórico - 15 min").
-  - [ ] Implementar sección de carga de archivos descargables y configuración de links útiles.
+  - [x] Añadir a la vista `/admin/tramites` el editor de Markdown para documentación requerida e instrucciones.
+  - [x] Añadir gestor de variantes de duración por trámite (ej: "Examen Teórico - 15 min").
+  - [x] Implementar sección de carga de archivos descargables y configuración de links útiles.
+
 
 ---
 

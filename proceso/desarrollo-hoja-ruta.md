@@ -105,6 +105,7 @@ stateDiagram-v2
   - [x] Configurar políticas estrictas de CORS (restringiendo a los orígenes del dominio oficial y local, métodos permitidos GET, POST, DELETE, OPTIONS).
   - [x] Inicializar Alembic y configurar el archivo de migración base.
   - [x] Escribir una ruta de Health Check (`GET /api/v1/health`) y probar que la conexión a PostgreSQL y Redis funcione.
+  - [x] Configurar siembra automática de cuentas de prueba de desarrollo (`ENVIRONMENT=development`) para cada rol (`administrador`, `administrativo`, `ciudadano`) facilitando el testeo interactivo del sistema.
 * **Frontend (`turnero`):**
   - [x] Inicializar la aplicación Next.js 16 con TypeScript 7, App Router, ESLint v10 y Tailwind CSS v4.
   - [x] Configurar variables de entorno y cliente HTTP base (`api-client.ts`).
@@ -139,7 +140,7 @@ stateDiagram-v2
 
 ---
 
-### [ ] Slice 3: Catálogo - ABM de Áreas y Trámites con Emisión de Carnet (`catalog`)
+### [x] Slice 3: Catálogo - ABM de Áreas y Trámites con Emisión de Carnet (`catalog`)
 *Meta: Permitir al personal administrativo crear, modificar y listar Áreas Municipales y Trámites definiendo su límite de sobreturnos diarios y la emisión de carnet.*
 * **Documentación de Referencia Obligatoria:**
   - [2-catalog.md](../especificaciones/dominios/2-catalog.md#L11-L14) (HU-14: Configuración de catálogo de trámites y áreas, límite de sobreturnos, emisión de carnet).
@@ -148,14 +149,15 @@ stateDiagram-v2
   - [sitemap-rutas.md](../especificaciones/sitemap-rutas.md#L29) (Ruta `/admin/tramites`).
   - [identidad-visual.md](../estandares/identidad-visual.md) y [arquitectura-frontend.md](../estandares/arquitectura-frontend.md) (Componentes `Card`, `Table`, `Modal`, `Button`).
 * **Backend (`turnero_api`):**
-  - [ ] Crear modelos SQLAlchemy `Area` y `Tramite` con relaciones y migración de Alembic.
-  - [ ] Crear esquemas Pydantic v2 `AreaCreate`, `AreaResponse`, `TramiteCreate`, `TramiteResponse`.
-  - [ ] Crear endpoints públicos `GET /areas` y `GET /tramites` (filtrados por área).
-  - [ ] Crear endpoints administrativos protegidos `POST/PUT/DELETE /admin/areas` y `POST/PUT/DELETE /admin/tramites`.
-  - [ ] Escribir tests unitarios y de integración para la creación y gestión de áreas y trámites.
+  - [x] Crear modelos SQLAlchemy `Area` y `Tramite` con relaciones y migración de Alembic.
+  - [x] Crear esquemas Pydantic v2 `AreaCreate`, `AreaResponse`, `TramiteCreate`, `TramiteResponse`.
+  - [x] Crear endpoints públicos `GET /areas` y `GET /tramites` (filtrados por área).
+  - [x] Crear endpoints administrativos protegidos `POST/PUT/DELETE /admin/areas` y `POST/PUT/DELETE /admin/tramites`.
+  - [x] Escribir tests unitarios y de integración para la creación y gestión de áreas y trámites.
 * **Frontend (`turnero`):**
-  - [ ] Crear vista administrativa `/admin/tramites` con listado de áreas y trámites.
-  - [ ] Implementar modales de creación y edición de Áreas y Trámites (con checkboxes para `emite_carnet` e input numérico para `limite_sobreturnos_diarios`).
+  - [x] Crear vista administrativa `/admin/tramites` con listado de áreas y trámites.
+  - [x] Implementar modales de creación y edición de Áreas y Trámites (con checkboxes para `emite_carnet` e input numérico para `limite_sobreturnos_diarios`).
+
 
 ---
 

@@ -187,3 +187,26 @@ Para evitar la exposición no autorizada de datos personales e historiales de tu
 - **Protección del Lado del Servidor:** La validación de roles y permisos de acceso para las secciones administrativas se debe ejecutar en Next.js del lado del servidor (SSR) antes de renderizar la página y enviar datos al cliente.
 - **Principio de Desconfianza del Cliente:** El estado local del frontend (Contexto de React o almacén de datos local) no debe considerarse como prueba de autenticación de permisos; cualquier acción de escritura invocará un endpoint de API que validará la cookie JWT de forma independiente en el servidor.
 
+---
+
+## 5. Estrategia de Caché e Invalidación de Datos en Cliente (Client-Side State & Catalog Store)
+
+Para evitar la degradación de la experiencia de usuario (parpadeos/flickers, spinners innecesarios y consumo repetitivo de ancho de banda) al navegar entre páginas o pestañas del panel administrativo y flujos de usuario:
+
+- **Prohibición de Fetching Directo Repetitivo:** Queda prohibido realizar solicitudes HTTP incondicionales en `useEffect` con `useState` aislado dentro de páginas para datos maestros o de catálogo (como Áreas, Trámites y Variantes).
+- **Uso Obligatorio de Stores Centralizados (Zustand):** Los datos compartidos entre rutas deben ser consumidos a través de tiendas Zustand (`useCatalogStore`), las cuales mantienen en memoria del navegador el estado `isInitialized`.
+- **Invalidación Reactiva (CUD):** Al ejecutar operaciones de creación, modificación o eliminación (CUD) de entidades de catálogo, el componente responsable debe invocar explícitamente `invalidateCatalog()`. Esto marca la caché como desactualizada y realiza un re-fetch automático en segundo plano para mantener la interfaz sincronizada de forma reactiva.
+
+### 5.1 Concurrencia Multi-Usuario y Manejo de Datos Obsoletos (Cache Staleness & Concurrency)
+
+Para garantizar la consistencia cuando múltiples operadores administrativos o ciudadanos interactúan en paralelo:
+
+1. **Diferenciación por Criticidad de Datos:**
+   - **Datos Maestros de Catálogo (Áreas, Trámites, Horarios de Agenda):** Tienen una tasa de cambio muy baja. La caché en cliente optimiza la lectura en pantalla sin riesgo. Si un operador modifica un trámite, su propia sesión invalida la caché de inmediato (`invalidateCatalog`). Para sincronización entre múltiples terminales, la tienda revalida silenciosamente los datos si la sesión o pestaña recupera el foco (`onFocus`).
+   - **Datos Altamente Dinámicos (Disponibilidad de Slots para Reserva `GET /turnos/disponibilidad`):** **Queda estrictamente prohibido cachear slots horarios en cliente por tiempos prolongados.** La disponibilidad se consulta siempre en tiempo real contra la API backend.
+2. **Validación de Concurrencia en Backend (Verdad Absoluta):**
+   - La caché en cliente es una capa de optimización visual (UX). La **verdad absoluta e integridad de datos residen en el backend (FastAPI + PostgreSQL)**.
+   - En caso de colisión de escrituras simultáneas por dos administradores sobre la misma entidad, el backend responderá con `409 Conflict` o rechazo por transacción bloqueada, invalidando la caché del cliente afectado para forzar una recarga limpia.
+
+
+

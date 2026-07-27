@@ -182,7 +182,7 @@ stateDiagram-v2
 
 ---
 
-### [ ] Slice 5: Agendamiento - Configuración de Agenda Semanal y Capacidad Simultánea (`scheduling`)
+### [x] Slice 5: Agendamiento - Configuración de Agenda Semanal y Capacidad Simultánea (`scheduling`)
 *Meta: Permitir al personal administrativo configurar los horarios de atención semanal por trámite (días 0-6, hora inicio, hora fin) y la cantidad de ventanillas concurrentes.*
 * **Documentación de Referencia Obligatoria:**
   - [3-scheduling.md](../especificaciones/dominios/3-scheduling.md#L10-L17) (HU-18: Registrar horarios y fechas de la agenda semanal por trámite, regla `hora_fin > hora_inicio` y `capacidad_simultanea`).
@@ -191,14 +191,14 @@ stateDiagram-v2
   - [openapi.yaml](../especificaciones/openapi.yaml) (Endpoints `/agendas`, `/admin/agendas`).
   - [sitemap-rutas.md](../especificaciones/sitemap-rutas.md#L30) (Ruta `/admin/agenda`).
 * **Backend (`turnero_api`):**
-  - [ ] Crear modelo SQLAlchemy `AgendaConfiguracion` (campos: `tramite_id`, `dia_semana`, `hora_inicio`, `hora_fin`, `capacidad_simultanea`, `activo`).
-  - [ ] Validar en el servicio que `hora_fin` sea posterior a `hora_inicio` y `capacidad_simultanea >= 1`.
-  - [ ] Crear endpoints `GET /agendas/{tramite_id}` y `PUT /admin/agendas/{tramite_id}`.
-  - [ ] Implementar almacenamiento en caché Redis (TTL 1h) con invalidación automática ante cambios.
-  - [ ] Escribir tests unitarios para las reglas de validación de agenda.
+  - [x] Crear modelo SQLAlchemy `AgendaConfiguracion` (campos: `tramite_id`, `dia_semana`, `hora_inicio`, `hora_fin`, `capacidad_simultanea`, `activo`).
+  - [x] Validar en el servicio que `hora_fin` sea posterior a `hora_inicio` y `capacidad_simultanea >= 1`.
+  - [x] Crear endpoints `GET /agendas/{tramite_id}` y `PUT /admin/agendas/{tramite_id}`.
+  - [x] Implementar almacenamiento en caché Redis (TTL 1h) con invalidación automática ante cambios.
+  - [x] Escribir tests unitarios para las reglas de validación de agenda.
 * **Frontend (`turnero`):**
-  - [ ] Crear la vista administrativa `/admin/agenda` con selector de trámite.
-  - [ ] Implementar tabla interactiva de los 7 días de la semana para habilitar/deshabilitar días y configurar horas y capacidad simultánea.
+  - [x] Crear la vista administrativa `/admin/agenda` con selector de trámite.
+  - [x] Implementar tabla interactiva de los 7 días de la semana para habilitar/deshabilitar días y configurar horas y capacidad simultánea.
 
 ---
 
@@ -217,7 +217,7 @@ stateDiagram-v2
   - [ ] Escribir tests del motor de disponibilidad con distintos escenarios de solapamiento.
 * **Frontend (`turnero`):**
   - [ ] Crear el flujo Stepper en `/turnos/reservar`:
-    - **Paso 1:** Selector de Trámite y variantes acumulativas mediante `CartVariantes`.
+    - **Paso 1:** Selector de Trámite y variantes acumulativas mediante `CartVariantes` consumiendo los datos del catálogo desde la tienda centralizada `useCatalogStore` (garantizando 0ms de carga en navegaciones).
     - **Paso 2:** Calendario interactivo y `GrillaSlots` de horarios libres devueltos por la API.
     - Botón de "Primer turno disponible" para auto-seleccionar la cita más próxima.
 

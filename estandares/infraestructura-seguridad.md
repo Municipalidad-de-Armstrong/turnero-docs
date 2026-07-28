@@ -237,3 +237,7 @@ Debido a la naturaleza descentralizada de los tokens JWT, se requiere un mecanis
 - **Restricción de Accesos:** La cuenta de usuario del motor de base de datos relacional utilizada por la API del turnero no debe poseer privilegios de superusuario ni permisos de administración estructural.
 - **Acceso Acotado:** Los permisos otorgados deben limitarse exclusivamente a operaciones de lectura, escritura y modificación de registros sobre las tablas del turnero municipal, bloqueando cualquier acción de modificación de estructuras o accesos a otros esquemas de la administración.
 
+### 5.6 Estándar de Zonas Horarias y Conversión ISO 8601
+- **Zona Horaria Municipal (`America/Argentina/Buenos_Aires`):** Toda la operación de atención presencial y las reglas de plantilla de agenda (`agenda_configuracion`) pertenecen a la zona horaria oficial `America/Argentina/Buenos_Aires` (UTC-3).
+- **Proyección de Disponibilidad Horaria:** Al generar las ranuras de disponibilidad (`BloqueDisponibilidad`), el servicio backend (`AvailabilityService`) proyecta los valores de plantilla `TIME` (`hora_inicio`, `hora_fin`) sobre la fecha solicitada utilizando la zona horaria `America/Argentina/Buenos_Aires` antes de realizar la conversión a UTC ISO 8601 (`.astimezone(timezone.utc)`). De este modo, un horario de agenda configurado a las 08:00 hs se transmite por la API como `11:00:00Z UTC`, garantizando que al ser interpretado por el navegador web del ciudadano en Argentina coincida exactamente con las 08:00 hs locales en pantalla.
+

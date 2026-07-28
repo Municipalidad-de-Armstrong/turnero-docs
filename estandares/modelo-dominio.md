@@ -429,6 +429,9 @@ Cuando un ciudadano selecciona múltiples variantes $V = \{v_1, v_2, \dots, v_n\
 $$\text{duracion\_total} = \sum_{i=1}^{n} v_i.\text{duracion\_minutos}$$
 - **Ejemplo:** Trámite "Licencia de Conducir" con variantes "Examen Físico" (15 min) y "Examen Teórico" (30 min) $\rightarrow \text{duracion\_total} = 45\text{ minutos}$.
 - El turno ocupará el rango `[fecha_hora_inicio, fecha_hora_inicio + duracion_total]`.
+- **Garantía de Variante Inicial y Protección de Borrado:**
+  - Todo trámite creado genera automáticamente una variante por defecto denominada *"Atención General"* con una duración de 15 minutos para garantizar que la duración total nunca sea 0 min.
+  - Para asegurar la consistencia del catálogo, la API administrativa impide la eliminación de la última variante de un trámite (`COUNT(variantes) <= 1` retorna `400 Bad Request`). Para reemplazar la variante única, el administrativo debe crear la nueva variante antes de eliminar la anterior.
 
 ### 4.2 Lógica de Validación de Disponibilidad y Concurrencia (HU-05, HU-06, HU-07)
 

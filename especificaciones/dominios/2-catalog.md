@@ -38,3 +38,6 @@ Este dominio se encarga de estructurar y configurar la oferta de servicios que e
    - Cada trámite expone una bandera booleana `emite_carnet`. Si está activa, indica al sistema de cierre de turnos que el trámite califica para registrar un Carnet en el perfil del ciudadano una vez finalizado exitosamente.
 5. **Configuración de Límite de Sobretornos:**
    - El límite diario de sobreturnos se configura a nivel de Trámite (`limite_sobreturnos_diarios`). Por defecto, se asigna un valor de `5`. Este campo admite valores nulos o cero si se desea inhabilitar la creación de sobreturnos para un trámite en particular.
+6. **Garantía de Variantes por Trámite y Restricción de Borrado:**
+   - Todo trámite registrado en el sistema debe contar obligatoriamente con al menos una variante de atención. Al crear un trámite en el catálogo, si no se especifican variantes personalizadas, el backend genera automáticamente una variante inicial por defecto denominada *"Atención General"* con una duración de `15 minutos`.
+   - Se prohíbe la eliminación de la última variante restante de un trámite. El sistema impide el borrado si la cantidad de variantes activas del trámite es menor o igual a 1 (`HTTP 400 Bad Request`), asegurando que la duración acumulada del turno nunca sea nula o nula disponibilidad.

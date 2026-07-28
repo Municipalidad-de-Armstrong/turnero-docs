@@ -54,6 +54,7 @@ Se define la tipografía **Montserrat** (o en su defecto fuentes sans-serif equi
 
 ---
 
-## 4. Iconografía
+## 4. Iconografía y Uso de Emojis
 
-* **Librería Recomendada:** `Material Symbols & Icons` en su variante de **estilo redondeado (rounded)**, para mantener la coherencia con los bordes curvos del logotipo y el tono amigable del turnero.
+* **Prohibición Estricta de Emojis:** Queda estrictamente prohibido el uso de emojis de texto (`📅`, `⏰`, `⚠️`, `📄`, `🔗`, etc.) en cualquier componente o aviso de la interfaz gráfica.
+* **Librería Recomendada e Iconos Vectoriales:** Utilizar exclusivamente iconos vectoriales SVG minimalistas o `Material Symbols & Icons` en su variante redondeada (rounded). Se debe incluir únicamente la cantidad indispensable de iconos necesarios para garantizar la sobriedad visual y evitar sobrecargar la interfaz.

@@ -202,7 +202,7 @@ stateDiagram-v2
 
 ---
 
-### [ ] Slice 6: Reservas - Motor de Disponibilidad Horaria y Stepper en 2 Pasos (`booking`)
+### [x] Slice 6: Reservas - Motor de Disponibilidad Horaria y Stepper en 2 Pasos (`booking`)
 *Meta: Calcular en tiempo real los slots horarios libres para una combinación de variantes de un trámite y ofrecer la función "Primer Turno Disponible".*
 * **Documentación de Referencia Obligatoria:**
   - [4-booking.md](../especificaciones/dominios/4-booking.md#L10-L25) (HU-05: Elección de trámite/variantes, HU-06: Selección múltiple, HU-07: Ver disponibilidad horaria, HU-08: Primer turno disponible).
@@ -210,13 +210,13 @@ stateDiagram-v2
   - [openapi.yaml](../especificaciones/openapi.yaml) (Endpoints `GET /turnos/disponibilidad` y `GET /turnos/primer-disponible`).
   - [arquitectura-frontend.md](../estandares/arquitectura-frontend.md) (Componentes `CartVariantes`, `GrillaSlots`, stepper de reserva).
 * **Backend (`turnero_api`):**
-  - [ ] Crear el servicio `AvailabilityService` con el algoritmo de cálculo de slots respetando `capacidad_simultanea` y duraciones acumuladas.
-  - [ ] Validar que todas las variantes enviadas pertenezcan obligatoriamente al mismo trámite.
-  - [ ] Implementar algoritmo de búsqueda del "Primer turno disponible" inspeccionando hasta 30 días futuros.
-  - [ ] Crear endpoints `GET /turnos/disponibilidad` y `GET /turnos/primer-disponible`.
-  - [ ] Escribir tests del motor de disponibilidad con distintos escenarios de solapamiento.
+  - [x] Crear el servicio `AvailabilityService` con el algoritmo de cálculo de slots respetando `capacidad_simultanea` y duraciones acumuladas.
+  - [x] Validar que todas las variantes enviadas pertenezcan obligatoriamente al mismo trámite.
+  - [x] Implementar algoritmo de búsqueda del "Primer turno disponible" inspeccionando hasta 30 días futuros.
+  - [x] Crear endpoints `GET /turnos/disponibilidad` y `GET /turnos/primer-disponible`.
+  - [x] Escribir tests del motor de disponibilidad con distintos escenarios de solapamiento.
 * **Frontend (`turnero`):**
-  - [ ] Crear el flujo Stepper en `/turnos/reservar`:
+  - [x] Crear el flujo Stepper en `/turnos/reservar`:
     - **Paso 1:** Selector de Trámite y variantes acumulativas mediante `CartVariantes` consumiendo los datos del catálogo desde la tienda centralizada `useCatalogStore` (garantizando 0ms de carga en navegaciones).
     - **Paso 2:** Calendario interactivo y `GrillaSlots` de horarios libres devueltos por la API.
     - Botón de "Primer turno disponible" para auto-seleccionar la cita más próxima.

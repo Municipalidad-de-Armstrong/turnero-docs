@@ -223,7 +223,7 @@ stateDiagram-v2
 
 ---
 
-### [ ] Slice 7: Reservas - Creación Atómica, Mi Panel de Turnos y Cancelaciones (`booking`)
+### [x] Slice 7: Reservas - Creación Atómica, Mi Panel de Turnos y Cancelaciones (`booking`)
 *Meta: Ejecutar la transacción de reserva con prevención de sobre-reservas (condición de carrera), visualizar "Mi Panel" de turnos y gestionar cancelaciones y reprogramaciones.*
 * **Documentación de Referencia Obligatoria:**
   - [4-booking.md](../especificaciones/dominios/4-booking.md#L26-L45) (HU-10: Reprogramar turno, HU-11: Cancelación con anticipación mínima de 24h, HU-12: Panel del ciudadano).
@@ -231,15 +231,15 @@ stateDiagram-v2
   - [openapi.yaml](../especificaciones/openapi.yaml) (Endpoints `POST /turnos`, `GET /turnos/mis-turnos`, `DELETE /turnos/{id}`, `PATCH /turnos/{id}/reprogramar`).
   - [sitemap-rutas.md](../especificaciones/sitemap-rutas.md#L21) (Ruta `/turnos`).
 * **Backend (`turnero_api`):**
-  - [ ] Crear modelos SQLAlchemy `Turno` y `TurnoVariante` con migración de Alembic.
-  - [ ] Implementar la transacción de reserva en `POST /turnos` bajo nivel de aislamiento `SERIALIZABLE` o `SELECT FOR UPDATE` (retornando `409 Conflict` si ocurre una colisión).
-  - [ ] Implementar endpoint `GET /turnos/mis-turnos` para el ciudadano autenticado.
-  - [ ] Implementar endpoints `DELETE /turnos/{id}` (cancelación) y `PATCH /turnos/{id}/reprogramar`, verificando la regla de anticipación mínima de 24 horas.
-  - [ ] Escribir tests de concurrencia simulando solicitudes de reserva simultáneas sobre el mismo slot.
+  - [x] Crear modelos SQLAlchemy `Turno` y `TurnoVariante` con migración de Alembic.
+  - [x] Implementar la transacción de reserva en `POST /turnos` bajo nivel de aislamiento `SERIALIZABLE` o `SELECT FOR UPDATE` (retornando `409 Conflict` si ocurre una colisión).
+  - [x] Implementar endpoint `GET /turnos/mis-turnos` para el ciudadano autenticado.
+  - [x] Implementar endpoints `DELETE /turnos/{id}` (cancelación) y `PATCH /turnos/{id}/reprogramar`, verificando la regla de anticipación mínima de 24 horas.
+  - [x] Escribir tests de concurrencia simulando solicitudes de reserva simultáneas sobre el mismo slot.
 * **Frontend (`turnero`):**
-  - [ ] Completar el **Paso 3** del Stepper `/turnos/reservar` con el resumen de la cita, lista de documentos a llevar y botón de confirmación final.
-  - [ ] Manejar el error `409 Conflict` devolviendo al usuario al Paso 2 sin perder su selección.
-  - [ ] Crear la vista `/turnos` ("Mi Panel") con pestañas "Próximos Turnos" e "Historial" y botones para cancelar/reprogramar.
+  - [x] Completar el **Paso 3** del Stepper `/turnos/reservar` con el resumen de la cita, lista de documentos a llevar y botón de confirmación final.
+  - [x] Manejar el error `409 Conflict` devolviendo al usuario al Paso 2 sin perder su selección.
+  - [x] Crear la vista `/turnos` ("Mi Panel") con pestañas "Próximos Turnos" e "Historial" y botones para cancelar/reprogramar.
 
 ---
 

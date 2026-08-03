@@ -197,16 +197,35 @@ Para evitar la degradación de la experiencia de usuario (parpadeos/flickers, sp
 - **Uso Obligatorio de Stores Centralizados (Zustand):** Los datos compartidos entre rutas deben ser consumidos a través de tiendas Zustand (`useCatalogStore`), las cuales mantienen en memoria del navegador el estado `isInitialized`.
 - **Invalidación Reactiva (CUD):** Al ejecutar operaciones de creación, modificación o eliminación (CUD) de entidades de catálogo, el componente responsable debe invocar explícitamente `invalidateCatalog()`. Esto marca la caché como desactualizada y realiza un re-fetch automático en segundo plano para mantener la interfaz sincronizada de forma reactiva.
 
-### 5.1 Concurrencia Multi-Usuario y Manejo de Datos Obsoletos (Cache Staleness & Concurrency)
+### 5.1 Clasificación de Datos por Nivel de Criticidad de Caché
+
+Para determinar correctamente la estrategia de caché de cada tipo de dato, se establece la siguiente clasificación en 3 niveles:
+
+| Nivel | Tipo de Datos | Estrategia de Caché | Invalidación | Ejemplo |
+|---|---|---|---|---|
+| **1. Maestros (Baja volatilidad)** | Áreas, Trámites, Variantes, Agendas | Caché permanente en sesión (`isInitialized` flag) | `invalidateCatalog()` tras CUD | `fetchCatalog()`, `fetchAgendaConfig()` |
+| **2. Operacionales (Media volatilidad)** | Cola del día, Turnos agendados | Caché por clave compuesta de filtros (`fecha\|areaId\|tramiteId`) | `invalidateCola(filters)` tras CUD sobre turnos | `fetchCola(filters)` |
+| **3. Dinámicos (Alta volatilidad)** | Disponibilidad de slots (`GET /turnos/disponibilidad`) | **Prohibido cachear.** Consulta en tiempo real obligatoria | No aplica (sin caché) | Fetch directo sin store |
+
+### 5.2 Caché de Datos Operacionales (Cola del Día)
+
+Los datos de la cola de atención del día (`/admin/dashboard/cola`) se consideran **operacionales**: cambian con moderada frecuencia (cuando un operador cierra un turno), pero no deben refetchearse cada vez que el usuario navega entre pestañas del panel administrativo.
+
+**Patrón estándar:**
+- La tienda `useCatalogStore` expone `fetchCola(filters, force?)` e `invalidateCola(filters?)`.
+- `fetchCola` almacena los resultados en `colaCache` bajo una clave compuesta `fecha|areaId|tramiteId`. Si ya existe una entrada para esa clave, retorna los datos cacheados sin solicitud HTTP.
+- `invalidateCola(filters)` elimina la entrada específica de la caché y realiza un re-fetch con `force=true`. Si se llama sin filtros, limpia toda la caché de cola.
+- Las páginas consumidoras (`DashboardPage`) consumen `fetchCola` / `colaLoading` / `colaError` del store, y tras una operación CUD (como registrar un resultado de atención), invocan `invalidateCola(filters)` seguido de `fetchCola(filters)`.
+
+### 5.3 Concurrencia Multi-Usuario y Manejo de Datos Obsoletos (Cache Staleness & Concurrency)
 
 Para garantizar la consistencia cuando múltiples operadores administrativos o ciudadanos interactúan en paralelo:
 
 1. **Diferenciación por Criticidad de Datos:**
    - **Datos Maestros de Catálogo (Áreas, Trámites, Horarios de Agenda):** Tienen una tasa de cambio muy baja. La caché en cliente optimiza la lectura en pantalla sin riesgo. Si un operador modifica un trámite, su propia sesión invalida la caché de inmediato (`invalidateCatalog`). Para sincronización entre múltiples terminales, la tienda revalida silenciosamente los datos si la sesión o pestaña recupera el foco (`onFocus`).
+   - **Datos Operacionales (Cola del día):** Tienen una tasa de cambio moderada. La caché por filtros evita re-fetching al navegar entre pestañas, pero se invalida automáticamente tras cada operación CUD del operador actual.
    - **Datos Altamente Dinámicos (Disponibilidad de Slots para Reserva `GET /turnos/disponibilidad`):** **Queda estrictamente prohibido cachear slots horarios en cliente por tiempos prolongados.** La disponibilidad se consulta siempre en tiempo real contra la API backend.
 2. **Validación de Concurrencia en Backend (Verdad Absoluta):**
    - La caché en cliente es una capa de optimización visual (UX). La **verdad absoluta e integridad de datos residen en el backend (FastAPI + PostgreSQL)**.
    - En caso de colisión de escrituras simultáneas por dos administradores sobre la misma entidad, el backend responderá con `409 Conflict` o rechazo por transacción bloqueada, invalidando la caché del cliente afectado para forzar una recarga limpia.
-
-
 

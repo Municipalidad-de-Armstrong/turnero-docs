@@ -502,5 +502,11 @@ Este algoritmo permite encontrar la primera franja libre adecuada para la duraci
     1. `sobreturno_prioridad`: `ALTA` $\rightarrow$ `MEDIA` $\rightarrow$ `BAJA`.
     2. `created_at`: Orden cronológico de creación (primero en entrar, primero en salir) para desempatar prioridades iguales.
 
-### 4.5 Alertas de Vencimiento de Carnet (HU-13) — [OBSOLETO]
+### 4.6 Anticipación Mínima de Reserva
+- Un ciudadano solo puede reservar turnos cuya fecha y hora de inicio sea mayor o igual a $\max(\text{ahora} + 2\text{ horas}, \text{mañana a las 00:00})$. Esta regla impide que se reserven turnos para el mismo día.
+- Los slots de disponibilidad cuya `fecha_hora_inicio` sea anterior a este umbral se marcan como no disponibles en la grilla.
+- La validación se aplica tanto en la consulta de disponibilidad (`GET /turnos/disponibilidad`) como en la creación y reprogramación de turnos (`POST /turnos`, `PUT /turnos`).
+- Los usuarios administrativos no están sujetos a esta restricción al crear o modificar turnos manualmente.
+
+### 4.7 Alertas de Vencimiento de Carnet (HU-13) — [OBSOLETO]
 - **Requerimiento eliminado por el cliente.** La sección de envío de alertas automáticas diarias al ciudadano sobre el vencimiento del carnet queda totalmente desactivada. La tabla `carnets` se mantiene únicamente para almacenamiento histórico y consulta de control del administrativo.

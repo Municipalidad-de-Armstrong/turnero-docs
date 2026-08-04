@@ -143,10 +143,13 @@ stateDiagram-v2
 
 ## 3. Reglas de Negocio del Dominio
 
-1. **Anticipación Mínima de Cancelación/Reprogramación:**
+1. **Anticipación Mínima de Reserva:**
+   - Un ciudadano solo puede reservar turnos cuya fecha y hora de inicio sea mayor o igual a $\max(\text{ahora} + 2\text{ horas}, \text{mañana a las 00:00})$. Esta regla impide que se reserven turnos para el mismo día.
+   - Los usuarios administrativos no están sujetos a esta restricción al crear o modificar turnos manualmente.
+2. **Anticipación Mínima de Cancelación/Reprogramación:**
    - Rige a nivel de sistema mediante el parámetro `anticipacion_cancelacion_horas` de la tabla `configuracion_global` (por defecto `24`).
    - Si la fecha y hora de inicio del turno menos la hora actual es inferior a este parámetro, el ciudadano no podrá reprogramar ni cancelar autónomamente desde su panel.
-2. **Reprogramación Atómica:**
+3. **Reprogramación Atómica:**
    - La reprogramación opera como una transacción única en el backend. Si el nuevo slot no está disponible, la transacción se deshace (Rollback) y el turno original permanece inalterado.
-3. **Restricción del Carrito de Variantes:**
+4. **Restricción del Carrito de Variantes:**
    - La selección múltiple de variantes de un ciudadano está restringida exclusivamente a variantes pertenecientes a un **mismo trámite**. No se permite agendar un único turno que combine variantes de diferentes trámites (ej: no se puede mezclar "Licencia de Conducir" con "Pago de Tasas"). El frontend debe forzar esta validación antes de solicitar slots de disponibilidad.

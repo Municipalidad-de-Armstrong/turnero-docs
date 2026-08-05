@@ -243,7 +243,7 @@ stateDiagram-v2
 
 ---
 
-### [ ] Slice 8: Operación - Tablero de Cola del Día y Cierre de Atenciones (`operation`)
+### [x] Slice 8: Operación - Tablero de Cola del Día y Cierre de Atenciones (`operation`)
 *Meta: Proveer el panel de ventanilla en tiempo real para visualizar la cola de turnos del día, registrar la asistencia (Completo, Incompleto, Ausente) y emitir carnets.*
 * **Documentación de Referencia Obligatoria:**
   - [5-operation.md](../especificaciones/dominios/5-operation.md#L16-L23) (HU-20: Cerrar turno registrando resultado y emisión de carnet si corresponde).
@@ -252,15 +252,15 @@ stateDiagram-v2
   - [openapi.yaml](../especificaciones/openapi.yaml) (Endpoints `/admin/dashboard/cola`, `/admin/turnos/{id}/resultado`).
   - [sitemap-rutas.md](../especificaciones/sitemap-rutas.md#L26) (Ruta `/admin/dashboard`).
 * **Backend (`turnero_api`):**
-  - [ ] Crear modelo SQLAlchemy `Carnet` con cifrado Fernet AES-256 en el campo `numero_carnet`.
-  - [ ] Crear endpoint `GET /admin/dashboard/cola` para obtener los turnos del día ordenados cronológicamente.
-  - [ ] Crear endpoint `PATCH /admin/turnos/{id}/resultado` que permita actualizar el estado a `COMPLETO`, `INCOMPLETO` (requiriendo `resultado_comentario`) o `AUSENTE`.
-  - [ ] Si el estado es `COMPLETO` y el trámite tiene `emite_carnet = true`, exigir `numero_carnet` y `fecha_vencimiento` e insertar el registro histórico en `carnets`.
-  - [ ] Escribir tests de integración para el cierre de turnos y emisión de carnets.
+  - [x] Crear modelo SQLAlchemy `Carnet` con cifrado Fernet AES-256 en el campo `numero_carnet`.
+  - [x] Crear endpoint `GET /admin/dashboard/cola` para obtener los turnos del día ordenados cronológicamente.
+  - [x] Crear endpoint `PATCH /admin/turnos/{id}/resultado` que permita actualizar el estado a `COMPLETO`, `INCOMPLETO` (requiriendo `resultado_comentario`) o `AUSENTE`.
+  - [x] Si el estado es `COMPLETO` y el trámite tiene `emite_carnet = true`, exigir `numero_carnet` y `fecha_vencimiento` e insertar el registro histórico en `carnets`.
+  - [x] Escribir tests de integración para el cierre de turnos y emisión de carnets.
 * **Frontend (`turnero`):**
-  - [ ] Crear la vista del panel de ventanilla `/admin/dashboard`.
-  - [ ] Implementar componente `AtendedorTurno` con botones rápidos para marcar Completo, Incompleto (con modal de observaciones) y Ausente.
-  - [ ] Desplegar campos para ingreso de número y vencimiento de carnet al completar trámites que lo requieran.
+  - [x] Crear la vista del panel de ventanilla `/admin/dashboard`.
+  - [x] Implementar componente `AtendedorTurno` con botones rápidos para marcar Completo, Incompleto (con modal de observaciones) y Ausente.
+  - [x] Desplegar campos para ingreso de número y vencimiento de carnet al completar trámites que lo requieran.
 
 ---
 

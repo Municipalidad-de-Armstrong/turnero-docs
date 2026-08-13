@@ -491,7 +491,7 @@ Este algoritmo permite encontrar la primera franja libre adecuada para la duraci
      - Si el bloque está disponible, retornar $[t_{\text{candidato}}, t_{\text{candidato}} + D]$ inmediatamente.
 3. Si transcurren los 30 días y no se encuentra ninguna ranura libre, lanzar una excepción indicando que no hay turnos disponibles e invitando a contactar soporte para gestionar un sobreturno.
 
-### 4.4 Reglas para la Asignación de Sobretornos (HU-19)
+### 4.4 Reglas para la Asignación de Sobreturnos (HU-19)
 - Los sobreturnos se asignan para un día específico sin un bloque de horario estricto, o bien se asocian al horario final del día para la cola física.
 - **Validación del Límite Diario**:
   - Contar todos los turnos activos (`estado != 'CANCELADO'`) del trámite en la fecha elegida que tengan `es_sobreturno = true`.

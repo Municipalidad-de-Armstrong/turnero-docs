@@ -97,7 +97,7 @@ src/
 3. **`AtendedorTurno` (Cierre Operativo):**
    - Formulario rápido utilizado por el administrativo para cambiar el estado de un turno reservado.
    - Al marcar "Completo", si el trámite tiene `emite_carnet: true`, despliega un campo obligatorio para ingresar la `fecha_vencimiento` del carnet del ciudadano.
-4. **`PrioritySelector` (Priorización de Sobretornos):**
+4. **`PrioritySelector` (Priorización de Sobreturnos):**
    - Permite al administrativo asignar las prioridades `ALTA`, `MEDIA` o `BAJA` al cargar un sobreturno.
    - Ordena visualmente la cola de espera de sobreturnos del día.
 5. **`ReporteDniModal` (Denuncia de Usurpación):**
@@ -229,3 +229,19 @@ Para garantizar la consistencia cuando múltiples operadores administrativos o c
    - La caché en cliente es una capa de optimización visual (UX). La **verdad absoluta e integridad de datos residen en el backend (FastAPI + PostgreSQL)**.
    - En caso de colisión de escrituras simultáneas por dos administradores sobre la misma entidad, el backend responderá con `409 Conflict` o rechazo por transacción bloqueada, invalidando la caché del cliente afectado para forzar una recarga limpia.
 
+---
+
+### 5.4 Estándar Obligatorio para Tablas y Columna de Acciones Persistente
+
+Para todas las tablas del sistema (`Table.tsx`), se exige el cumplimiento obligatorio de los siguientes estándares visuales y de interacción:
+
+1. **Columna de Acciones Persistente (Sticky Right):**
+   - La columna de acciones debe configurarse con `sticky: "right"`. Al scrollear horizontalmente en dispositivos o pantallas reducidas, la columna permanece fija a la derecha sobre el margen de la tabla.
+   - **Opacidad 100% Sólida (Sin Traslucidez):** Las celdas de la columna sticky deben utilizar colores de fondo sólidos 100% opacos (`bg-[#F0F2F5]` en encabezados `th`, `bg-white` en celdas `td` y `group-hover:bg-[#F3F4F6]`), impidiendo que el contenido de las otras columnas se trasluzca al deslizarse debajo.
+2. **Botones de Iconos SVG (Sin Texto y Sin Emojis):**
+   - Los botones dentro de la columna de acciones deben consistir exclusivamente en iconos vectoriales SVG minimalistas con tamaño cómodo (`p-2.5` e iconos de `w-5 h-5`), con bordes sutiles y sombra suave (`shadow-2xs`).
+   - Deben incluir atributos `title` y `aria-label` descriptivos para accesibilidad y tooltips nativos.
+3. **No Duplicar Botón "Ver Detalle":**
+   - En tablas con `onRowClick`, queda prohibido agregar un botón de ojo/visualizar en la columna de acciones. El clic en la fila entera abre el modal de lectura.
+4. **Aislamiento de Clics:**
+   - Cada botón de acción debe ejecutar `e.stopPropagation()` para no activar el evento `onRowClick` de la fila.

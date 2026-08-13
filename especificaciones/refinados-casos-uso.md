@@ -44,7 +44,7 @@ Operador interno con **panel exclusivo**; ingresa con email + contraseña (`ADT-
 | Modificar turnos | `ADT-05` | Modifica los datos de cualquier turno existente de cualquier área. |
 | Documentación por trámite | `ADT-06` | Asigna la documentación requerida a cada trámite. |
 | Registrar horarios y fechas | `ADT-07` | Define horarios y fechas de los turnos (agenda). |
-| Cargar sobreturnos | `ADT-08` | Sobretornos asignados a un día específico, **ordenados por prioridad**. |
+| Cargar sobreturnos | `ADT-08` | Sobreturnos asignados a un día específico, **ordenados por prioridad**. |
 | Resultado del trámite | `ADT-09` | Marca el turno como **"completo", "incompleto" o "ausente"** (trámite satisfactorio, no satisfactorio o inasistencia). |
 
 **No puede:** gestionar cuentas administrativas ni la configuración global del sistema.
@@ -99,7 +99,7 @@ Para lograr un diseño modular y mantener la gobernanza técnica de la documenta
 - **Canal de Notificaciones:** Se despachan avisos por tres vías simultáneas: plataforma, email y WhatsApp (este último de forma mandatoria y no diferido).
 - **Control de Carnets:** Se almacena una entidad `Carnet` histórica vinculada al ciudadano (con número, fecha de emisión y vencimiento) al marcar como Completo un turno de un trámite que emite carnet. Se desactivan por completo las alertas automáticas de vencimiento al ciudadano, conservando la información solo para consulta administrativa.
 - **Reportes de Identidad:** Permite a ciudadanos no autenticados reportar un DNI en uso no autorizado durante el registro. Requiere datos de contacto reales y descripción. El administrativo puede suspender la cuenta del DNI usurpador directamente desde el reporte.
-- **Sobretornos:** Se marcan con `es_sobreturno = true` para un día específico. Cuentan con una prioridad asignada manualmente (Alta, Media, Baja), ordenándose por prioridad y luego por orden de llegada (hora de creación). Existe un límite diario de sobreturnos configurable por trámite (por defecto 5).
+- **Sobreturnos:** Se marcan con `es_sobreturno = true` para un día específico. Cuentan con una prioridad asignada manualmente (Alta, Media, Baja), ordenándose por prioridad y luego por orden de llegada (hora de creación). Existe un límite diario de sobreturnos configurable por trámite (por defecto 5).
 - **Resultado del turno:** Los estados posibles para el resultado de un turno atendido son: `COMPLETO`, `INCOMPLETO` y `AUSENTE`.
 - **Reprogramación y Cancelación:** La cancelación/reprogramación por parte del ciudadano está sujeta a un parámetro de anticipación mínima configurable en el sistema por el Administrador (por defecto 24 horas). La reprogramación opera como una cancelación y nueva reserva en una sola transacción.
 - **Carrito de Variantes:** Cuando un ciudadano selecciona múltiples variantes en un mismo turno, el sistema realiza una reserva de un bloque continuo único de tiempo equivalente a la suma de las duraciones de las variantes seleccionadas.

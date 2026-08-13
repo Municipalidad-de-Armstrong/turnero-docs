@@ -137,6 +137,8 @@ stateDiagram-v2
   - [x] Crear páginas públicas de `/auth/login`, `/auth/register` y `/auth/recuperar-password`.
   - [x] Implementar middleware de Next.js (`middleware.ts`) para protección de rutas según la cookie de sesión `session`.
   - [x] Diseñar el modal `ReporteDniModal` en `/auth/register` si el DNI ya existe (capturando datos del denunciante).
+  - [x] Crear la vista `/turnos/perfil` ("Mi Perfil") para edición de datos de contacto (teléfono e email) con aviso de re-validación de cuenta (HU-04).
+
 
 ---
 
@@ -264,7 +266,7 @@ stateDiagram-v2
 
 ---
 
-### [ ] Slice 9: Operación - Sobretornos con Prioridad y Agendamiento Manual (`operation` & `booking`)
+### [x] Slice 9: Operación - Sobreturnos con Prioridad y Agendamiento Manual (`operation` & `booking`)
 *Meta: Permitir la carga de sobreturnos con prioridades (Alta, Media, Baja) respetando el límite diario y la carga de turnos presenciales con registro "al vuelo" de ciudadanos.*
 * **Documentación de Referencia Obligatoria:**
   - [5-operation.md](../especificaciones/dominios/5-operation.md#L10-L15) (HU-19: Cargar sobreturnos con prioridad y validación del límite diario `limite_sobreturnos_diarios`).
@@ -272,19 +274,19 @@ stateDiagram-v2
   - [openapi.yaml](../especificaciones/openapi.yaml) (Endpoints `/admin/sobreturnos`, `/admin/turnos/manual`, `/admin/turnos`).
   - [sitemap-rutas.md](../especificaciones/sitemap-rutas.md#L27-L28) (Rutas `/admin/turnos` y `/admin/turnos/nuevo`).
 * **Backend (`turnero_api`):**
-  - [ ] Implementar endpoint `POST /admin/sobreturnos` validando que la cantidad de sobreturnos del día no supere `limite_sobreturnos_diarios` del trámite.
-  - [ ] Actualizar el ordenamiento de la cola diaria (`GET /admin/dashboard/cola`) agrupando sobreturnos al final, ordenados por Prioridad (`ALTA` > `MEDIA` > `BAJA`) y FIFO (`created_at`).
-  - [ ] Implementar endpoint `POST /admin/turnos/manual` que busque un ciudadano por DNI (vía HMAC) o lo cree al vuelo en estado `PENDING_VALIDATION`.
-  - [ ] Crear buscador global de turnos `GET /admin/turnos` para operadores.
-  - [ ] Escribir tests unitarios y de integración para sobreturnos y agendamiento manual.
+  - [x] Implementar endpoint `POST /admin/sobreturnos` validando que la cantidad de sobreturnos del día no supere `limite_sobreturnos_diarios` del trámite.
+  - [x] Actualizar el ordenamiento de la cola diaria (`GET /admin/dashboard/cola`) agrupando sobreturnos al final, ordenados por Prioridad (`ALTA` > `MEDIA` > `BAJA`) y FIFO (`created_at`).
+  - [x] Implementar endpoint `POST /admin/turnos/manual` que busque un ciudadano por DNI (vía HMAC) o lo cree al vuelo en estado `PENDING_VALIDATION`.
+  - [x] Crear buscador global de turnos `GET /admin/turnos` para operadores.
+  - [x] Escribir tests unitarios y de integración para sobreturnos y agendamiento manual.
 * **Frontend (`turnero`):**
-  - [ ] Crear formulario modal para solicitar sobreturno con selector de prioridad (`PrioritySelector`).
-  - [ ] Crear la vista de carga manual `/admin/turnos/nuevo` con buscador rápido por DNI (`BuscadorCiudadano`).
-  - [ ] Crear la vista de buscador global de turnos `/admin/turnos`.
+  - [x] Crear formulario modal para solicitar sobreturno con selector de prioridad (`PrioritySelector`).
+  - [x] Crear la vista de carga manual `/admin/turnos/nuevo` con buscador rápido por DNI (`BuscadorCiudadano`).
+  - [x] Crear la vista de buscador global de turnos `/admin/turnos`.
 
 ---
 
-### [ ] Slice 10: Notificaciones - Generación de Planilla PDF y Despacho Asíncrono (`notifications`)
+### [x] Slice 10: Notificaciones - Generación de Planilla PDF y Despacho Asíncrono (`notifications`)
 *Meta: Despachar notificaciones de confirmación por email (SMTP) y WhatsApp (mock) en segundo plano mediante Celery/Redis, y generar la planilla del turno en PDF.*
 * **Documentación de Referencia Obligatoria:**
   - [6-notifications.md](../especificaciones/dominios/6-notifications.md#L9-L20) (HU-09: Confirmación por email, WhatsApp y notificación interna, HU-25: Descargar planilla PDF y adjuntos).
@@ -292,19 +294,20 @@ stateDiagram-v2
   - [modelo-dominio.md](../estandares/modelo-dominio.md) (Entidad `Notificacion`).
   - [openapi.yaml](../especificaciones/openapi.yaml) (Endpoints `GET /turnos/{id}/planilla`, `GET /usuarios/me/notificaciones`).
 * **Backend (`turnero_api`):**
-  - [ ] Crear modelo SQLAlchemy `Notificacion` con migración de Alembic.
-  - [ ] Configurar Celery con broker Redis para procesamiento asíncrono en segundo plano (`BackgroundTasks` o Celery worker).
-  - [ ] Crear servicio de generación de planilla PDF (incluyendo datos de la cita, DNI descifrado y lista de documentación requerida).
-  - [ ] Desarrollar servicio de envío de email SMTP (STARTTLS) y cliente HTTP mockable para WhatsApp.
-  - [ ] Crear endpoints `GET /turnos/{id}/planilla` y `GET /usuarios/me/notificaciones`.
-  - [ ] Escribir tests para la generación de PDF y encolamiento de tareas.
+  - [x] Crear modelo SQLAlchemy `Notificacion` con migración de Alembic.
+  - [x] Configurar Celery con broker Redis para procesamiento asíncrono en segundo plano (`BackgroundTasks` o Celery worker).
+  - [x] Crear servicio de generación de planilla PDF (incluyendo datos de la cita, DNI descifrado y lista de documentación requerida).
+  - [x] Desarrollar servicio de envío de email SMTP (STARTTLS) y cliente HTTP mockable para WhatsApp.
+  - [x] Crear endpoints `GET /turnos/{id}/planilla` y `GET /usuarios/me/notificaciones`.
+  - [x] Escribir tests para la generación de PDF y encolamiento de tareas.
 * **Frontend (`turnero`):**
-  - [ ] Añadir botón "Descargar Planilla" en el comprobante del turno y en el panel del ciudadano.
-  - [ ] Implementar componente de Notificaciones (campana visual) en la barra de navegación para alertas internas.
+  - [x] Añadir botón "Descargar Planilla" en el comprobante del turno y en el panel del ciudadano.
+  - [x] Implementar componente de Notificaciones (campana visual) en la barra de navegación para alertas internas.
+
 
 ---
 
-### [ ] Slice 11: Configuración Global y Gestión de Cuentas Administrativas (`identity` & `operation`)
+### [x] Slice 11: Configuración Global y Gestión de Cuentas Administrativas (`identity` & `operation`)
 *Meta: Proveer al Administrador General el control de parámetros globales del sistema y la administración de usuarios del personal.*
 * **Documentación de Referencia Obligatoria:**
   - [1-identity.md](../especificaciones/dominios/1-identity.md#L32-L39) (HU-23: Crear cuentas administrativas con contraseña temporal, HU-24: Dar de baja administrativos).
@@ -313,11 +316,11 @@ stateDiagram-v2
   - [openapi.yaml](../especificaciones/openapi.yaml) (Endpoints `/admin/configuracion`, `/admin/administrativos`).
   - [sitemap-rutas.md](../especificaciones/sitemap-rutas.md#L32-L35) (Rutas `/admin/configuracion` y `/admin/administrativos`).
 * **Backend (`turnero_api`):**
-  - [ ] Crear modelo SQLAlchemy `ConfiguracionGlobal` y sembrar valores por defecto (ej: `anticipacion_cancelacion_horas = 24`).
-  - [ ] Sembrar en la inicialización la cuenta por defecto del `ADMINISTRADOR`.
-  - [ ] Crear endpoints `GET/PATCH /admin/configuracion` (acceso exclusivo: `administrador`).
-  - [ ] Crear endpoints `POST/GET/DELETE /admin/administrativos` (generando contraseña temporal en la creación y cambiando a `INACTIVE` en la baja).
-  - [ ] Escribir tests de integración para el panel de administración global.
+  - [x] Crear modelo SQLAlchemy `ConfiguracionGlobal` y sembrar valores por defecto (ej: `anticipacion_cancelacion_horas = 24`).
+  - [x] Sembrar en la inicialización la cuenta por defecto del `ADMINISTRADOR`.
+  - [x] Crear endpoints `GET/PATCH /admin/configuracion` (acceso exclusivo: `administrador`).
+  - [x] Crear endpoints `POST/GET/PATCH/DELETE /admin/administrativos` (creación con contraseña temporal / hashes, edición y cambiando a `INACTIVE` en la baja).
+  - [x] Escribir tests de integración para el panel de administración global.
 * **Frontend (`turnero`):**
-  - [ ] Crear la vista `/admin/configuracion` para editar parámetros globales.
-  - [ ] Crear la vista `/admin/administrativos` para listar, dar de alta y dar de baja personal de atención.
+  - [x] Crear la vista `/admin/configuracion` para editar parámetros globales.
+  - [x] Crear la vista `/admin/administrativos` para listar, dar de alta y dar de baja personal de atención.

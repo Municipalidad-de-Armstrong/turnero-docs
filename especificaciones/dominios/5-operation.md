@@ -66,7 +66,7 @@ stateDiagram-v2
 1. **Ordenamiento de la Cola Operativa diaria:**
    - En el panel administrativo (`/admin/dashboard`), los turnos del día se listan divididos en:
      - **Turnos Regulares:** Ordenados estrictamente de forma cronológica por su horario de inicio (`fecha_hora_inicio`).
-     - **Sobretornos:** Se agrupan al final de la cola diaria y se ordenan de acuerdo a las siguientes prioridades:
+     - **Sobreturnos:** Se agrupan al final de la cola diaria y se ordenan de acuerdo a las siguientes prioridades:
        1. Prioridad declarada: `ALTA` $\rightarrow$ `MEDIA` $\rightarrow$ `BAJA`.
        2. Fecha de creación (`created_at`): En caso de igual prioridad, se ordena cronológicamente (FIFO - Primero en entrar, primero en salir).
 2. **Emisión de Carnets Históricos:**

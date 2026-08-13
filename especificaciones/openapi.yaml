@@ -1229,7 +1229,7 @@ paths:
               $ref: '#/components/schemas/SobreturnoCreateRequest'
       responses:
         '201':
-          description: Sobretorno registrado con éxito. Se notifica al ciudadano.
+          description: Sobreturno registrado con éxito. Se notifica al ciudadano.
           content:
             application/json:
               schema:

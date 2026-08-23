@@ -510,3 +510,24 @@ Este algoritmo permite encontrar la primera franja libre adecuada para la duraci
 
 ### 4.7 Alertas de Vencimiento de Carnet (HU-13) — [OBSOLETO]
 - **Requerimiento eliminado por el cliente.** La sección de envío de alertas automáticas diarias al ciudadano sobre el vencimiento del carnet queda totalmente desactivada. La tabla `carnets` se mantiene únicamente para almacenamiento histórico y consulta de control del administrativo.
+
+### 4.8 Políticas de Validación e Integridad de Entrada
+- **DNI:**
+  - Validación de solo dígitos numéricos con longitud de 7 a 10 caracteres (`^\d{7,10}$`).
+  - Sanitización automática obligatoria: remoción de puntos, guiones y espacios (`\D`) antes de ejecutar el cifrado simétrico AES-256 (`dni_cifrado`) y el hasheo determinista HMAC-SHA256 (`dni_hmac`).
+- **Teléfono de Contacto:**
+  - Validación de formato telefónico estándar (`^(\+?[0-9\s\-()]{6,20})$`) con un mínimo de 6 dígitos reales y máximo de 15 dígitos.
+- **Correo Electrónico:**
+  - Validación sintáctica RFC 5322 (`EmailStr`) y normalización automática a minúsculas (`.strip().lower()`) para evitar duplicados insensibles a mayúsculas.
+- **Nombres y Apellidos:**
+  - Restricción a caracteres alfabéticos, tildes, diéresis, espacios, guiones y apóstrofes (`^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]{2,100}$`).
+- **Contraseñas y Alta de Usuarios:**
+  - Mínimo 8 caracteres y máximo 100 caracteres, requiriendo al menos una letra y un número.
+  - En el formulario de registro de ciudadanos se exige confirmación de contraseña (`confirmPassword`) validada en cliente antes de procesar el alta.
+- **Catálogo Municipal:**
+  - **Áreas:** Nombre único obligatorio (insensible a mayúsculas/minúsculas).
+  - **Trámites:** Nombre único por área (insensible a mayúsculas/minúsculas). Límite de sobreturnos diarios acotado entre 0 y 50.
+  - **Variantes:** Duración en minutos acotada estrictamente entre 1 y 480 minutos (máximo 8 horas).
+  - **Enlaces:** URLs válidas con protocolo obligatorio (`http://` o `https://`).
+- **Agendas y Horarios:**
+  - Horas de inicio y fin en formato de 24 horas válido (`^([01]\d|2[0-3]):([0-5]\d)$`) con validación de que $\text{hora\_fin} > \text{hora\_inicio}$. Capacidad simultánea acotada entre 1 y 50 operadores concurrentes.

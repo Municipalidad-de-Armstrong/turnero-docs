@@ -41,3 +41,11 @@ Este dominio se encarga de estructurar y configurar la oferta de servicios que e
 6. **Garantía de Variantes por Trámite y Restricción de Borrado:**
    - Todo trámite registrado en el sistema debe contar obligatoriamente con al menos una variante de atención. Al crear un trámite en el catálogo, si no se especifican variantes personalizadas, el backend genera automáticamente una variante inicial por defecto denominada *"Atención General"* con una duración de `15 minutos`.
    - Se prohíbe la eliminación de la última variante restante de un trámite. El sistema impide el borrado si la cantidad de variantes activas del trámite es menor o igual a 1 (`HTTP 400 Bad Request`), asegurando que la duración acumulada del turno nunca sea nula o nula disponibilidad.
+7. **Unicidad de Nombres (Case-Insensitive):**
+   - No se permite registrar dos Áreas con el mismo nombre (insensible a mayúsculas y espacios marginales). Retorna `HTTP 409 Conflict`.
+   - No se permite registrar dos Trámites con el mismo nombre dentro de la misma Área (insensible a mayúsculas y espacios marginales). Retorna `HTTP 409 Conflict`.
+8. **Límites de Sobreturnos y Duración de Variantes:**
+   - El `limite_sobreturnos_diarios` está acotado numéricamente en el rango de `0 a 50`.
+   - La `duracion_minutos` de una Variante debe encontrarse en el rango de `1 a 480` minutos (máximo 8 horas).
+9. **Validación de Enlaces Útiles:**
+   - Las URLs de enlaces asociados deben iniciar estrictamente con protocolo `http://` o `https://`.

@@ -218,10 +218,16 @@ Para mitigar el consumo no autorizado de la API por parte de aplicaciones extern
 - **Orígenes Permitidos:** Se restringirá el acceso exclusivamente al nombre de dominio oficial de la municipalidad. Queda prohibido el uso del comodín de acceso general en entornos de producción.
 - **Métodos Permitidos:** Solo se habilitarán los métodos HTTP estrictamente requeridos por la aplicación (GET, POST, DELETE y OPTIONS para las solicitudes previas).
 
-### 5.2 Validación Estricta de Esquemas de Entrada y Tipos
-Para prevenir vulnerabilidades derivadas del ingreso de datos maliciosos o malformados, todos los datos entrantes del cliente deben pasar por validaciones obligatorias:
-- **Modelos de Validación:** Todos los endpoints de la API deben forzar la validación de tipos mediante modelos de datos definidos en el código del servidor (por ejemplo, Pydantic).
-- **Límites de Longitud y Expresiones Regulares:** Se deben configurar límites de caracteres máximos y mínimos para nombres, DNI, correos y comentarios. Los campos críticos como correos electrónicos o números telefónicos deben validarse mediante expresiones regulares estrictas antes de procesarse.
+### 5.2 Validación Estricta de Esquemas de Entrada, Sanitización y Tipos
+Para prevenir vulnerabilidades derivadas del ingreso de datos maliciosos o malformados, todos los datos entrantes del cliente deben pasar por validaciones y sanitizaciones obligatorias:
+- **Modelos de Validación Centralizados:** Todos los endpoints de la API deben forzar la validación de tipos mediante modelos de datos Pydantic respaldados por validadores reutilizables (`app/core/validators.py`).
+- **Sanitización de PII (DNI y Teléfono):**
+  - Todo DNI recibido debe sanitizarse removiendo cualquier carácter no numérico (`\D`), validando una longitud estricta de 7 a 10 dígitos numéricos (`^\d{7,10}$`) antes de su almacenamiento cifrado y cálculo de HMAC.
+  - Los números de teléfono deben someterse a validación de formato internacional/nacional (`^(\+?[0-9\s\-()]{6,20})$`) con un rango de 6 a 15 dígitos reales.
+- **Normalización de Correo Electrónico:** Todas las direcciones de correo electrónico deben normalizarse a minúsculas (`.strip().lower()`) y validarse sintácticamente bajo el estándar RFC 5322 (`EmailStr`).
+- **Nombres y Apellidos:** Restringidos a caracteres alfabéticos, espacios, tildes y guiones (`^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]{2,100}$`).
+- **Confirmación de Credenciales:** En los procesos de registro de usuarios en el cliente, es obligatoria la verificación de coincidencia del campo de confirmación de contraseña (`confirmPassword`) previo al despacho de la petición.
+- **Integridad de Catálogo y Agenda:** Control de unicidad insensible a mayúsculas/minúsculas para nombres de áreas y trámites por área, acotamiento de duración de variantes (1 a 480 min) y formato de hora estricto en agendas (`^([01]\d|2[0-3]):([0-5]\d)$`).
 
 ### 5.3 Sistema de Revocación e Invalidación de Sesiones (JWT Blacklist)
 Debido a la naturaleza descentralizada de los tokens JWT, se requiere un mecanismo para anular de inmediato la sesión de un usuario (por ejemplo, cuando realiza un cierre de sesión voluntario o cuando el administrador deshabilita una cuenta municipal):

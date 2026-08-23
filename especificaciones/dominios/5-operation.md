@@ -73,3 +73,7 @@ stateDiagram-v2
    - La tabla `carnets` almacena la relación histórica del ciudadano con sus credenciales emitidas. 
    - Campos obligatorios a guardar en el cierre exitoso: `numero_carnet`, `fecha_emision` (fecha actual), `fecha_vencimiento` (ingresada manualmente por el administrativo) y `activo = true`.
    - Se eliminaron las notificaciones automáticas y alertas por email/WhatsApp sobre el vencimiento de carnet (requerimiento descartado por el cliente). La información se conserva de forma exclusiva para consulta del administrativo.
+3. **Validación Estricta de Parámetros Operativos:**
+   - **Sobreturnos:** `fecha` requerida en formato `YYYY-MM-DD` (tipo `date`), prioridad restringida al enum `(ALTA, MEDIA, BAJA)`.
+   - **Cierre de Turnos:** `estado` restringido a `(COMPLETO, INCOMPLETO, AUSENTE)`. `fecha_vencimiento` requerida en formato `YYYY-MM-DD` y estrictamente posterior a la fecha actual para trámites que emiten carnet.
+   - **Actualización de Turnos:** `estado` restringido a `(RESERVADO, COMPLETO, INCOMPLETO, AUSENTE, CANCELADO)`.

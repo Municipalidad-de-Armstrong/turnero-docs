@@ -8,11 +8,12 @@ Este dominio es responsable de la gestión de cuentas de usuario, el control de 
 
 ## 1. Historias de Usuario Técnicas
 
-- **HU-01** `USU-02` — *Como Ciudadano, quiero registrarme con DNI, email, teléfono y contraseña para acceder al sistema.*
+- **HU-01** `USU-02` — *Como Ciudadano, quiero registrarme con DNI, email, teléfono, contraseña y confirmación para acceder al sistema.*
   - **Criterios de Aceptación (CA):**
-    - El formulario exige: DNI (número), Nombre, Apellido, Email, Teléfono de contacto y Contraseña.
+    - El formulario exige: DNI (números de 7 a 10 dígitos con sanitización automática de caracteres no numéricos), Nombre (alfabético), Apellido (alfabético), Email (RFC 5322 normalizado a minúsculas), Teléfono de contacto (formato válido de 6 a 15 dígitos), Contraseña y Confirmar Contraseña.
+    - El frontend y backend validan la coincidencia exacta de ambas contraseñas antes del despacho.
     - El sistema valida que el DNI sea único y el Email sea único.
-    - La contraseña debe cumplir con una política mínima de seguridad (ej: mínimo 8 caracteres, al menos una letra y un número).
+    - La contraseña debe cumplir con una política mínima de seguridad (mínimo 8 caracteres, al menos una letra y un número).
     - Al registrarse, la cuenta se crea en estado `PENDING_VALIDATION` y se envía un token de confirmación de un solo uso por correo electrónico.
 - **HU-02** — *Como Ciudadano o Administrativo, quiero iniciar y cerrar sesión de forma segura.*
   - **Criterios de Aceptación (CA):**

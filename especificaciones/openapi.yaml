@@ -2096,6 +2096,7 @@ components:
         duracion_minutos:
           type: integer
           minimum: 1
+          maximum: 480
           example: 60
 
     VarianteUpdateRequest:
@@ -2110,6 +2111,7 @@ components:
         duracion_minutos:
           type: integer
           minimum: 1
+          maximum: 480
           example: 15
 
     AgendaConfigResponse:
@@ -2166,15 +2168,16 @@ components:
           example: 1
         hora_inicio:
           type: string
-          pattern: '^\d{2}:\d{2}$'
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
           example: "08:00"
         hora_fin:
           type: string
-          pattern: '^\d{2}:\d{2}$'
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
           example: "12:00"
         capacidad_simultanea:
           type: integer
           minimum: 1
+          maximum: 50
           example: 2
         activo:
           type: boolean

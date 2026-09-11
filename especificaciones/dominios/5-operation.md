@@ -11,6 +11,7 @@ Este dominio abarca la gestión del día a día municipal una vez que el ciudada
 - **HU-19** `ADT-08` — *Como Administrativo, quiero cargar sobreturnos para un día específico, ordenados por prioridad.*
   - **Criterios de Aceptación (CA):**
     - Permite registrar a un ciudadano para atención en el día, marcado con `es_sobreturno = true`.
+    - La hora de inicio (`fecha_hora_inicio`) del sobreturno se fija en la hora de cierre (`hora_fin`) configurada en la agenda del trámite para dicho día (o la hora máxima de atención del trámite).
     - El administrativo asigna manualmente una prioridad al sobreturno (`ALTA`, `MEDIA`, `BAJA`).
     - El sistema valida que la cantidad de sobreturnos del trámite creados en el día no supere el `limite_sobreturnos_diarios` establecido.
 - **HU-20** `ADT-09` — *Como Administrativo, quiero cerrar un turno registrando el resultado de la atención.*
@@ -54,7 +55,7 @@ stateDiagram-v2
 | Estado Origen | Estado Destino | Acción / Evento | Roles Autorizados | Restricciones de Negocio |
 |---|---|---|---|---|
 | `*` (Ninguno) | `RESERVADO` | `CrearTurno()` | `CIUDADANO`, `ADMINISTRATIVO` | Validar disponibilidad de horario (si es regular) o límite diario (si es sobreturno). |
-| `RESERVADO` | `CANCELADO` | `CancelarTurno()` | **Ciudadano:** Si faltan $\ge 24\text{ hs}$ para el inicio.<br>**Administrativo:** En cualquier momento. | Si cancela el Administrativo, se requiere ingresar obligatoriamente un `motivo_cancelacion`. |
+| `RESERVADO` | `CANCELADO` | `CancelarTurno()` | **Ciudadano:** Si faltan $\ge 24\text{ hs}$ para el inicio.<br>**Administrativo:** En cualquier momento. | El `motivo_cancelacion` es opcional tanto para el ciudadano como para el administrativo. |
 | `RESERVADO` | `COMPLETO` | `RegistrarResultadoCompleto()` | `ADMINISTRATIVO` | - Debe realizarse en la fecha del turno o posterior.<br>- Si el trámite tiene `emite_carnet = true`, el sistema obliga a registrar la fecha de vencimiento e inserta un registro en la tabla `carnets`. |
 | `RESERVADO` | `INCOMPLETO` | `RegistrarResultadoIncompleto()`| `ADMINISTRATIVO` | Debe ingresarse un comentario en `resultado_comentario` detallando los requisitos faltantes. |
 | `RESERVADO` | `AUSENTE` | `RegistrarResultadoAusente()` | `ADMINISTRATIVO` | Cambia el estado a ausente si el ciudadano no concurrió a la cita. |

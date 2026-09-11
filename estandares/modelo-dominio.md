@@ -32,6 +32,7 @@ erDiagram
         int id PK
         varchar nombre UK
         text descripcion
+        varchar direccion
         timestamp_tz created_at
         timestamp_tz updated_at
     }
@@ -208,6 +209,7 @@ Entidades de administración del municipio (ej: Tránsito, Rentas, Obras Particu
 | `id` | `SERIAL` | `PRIMARY KEY` | Identificador único del área. |
 | `nombre` | `VARCHAR(100)` | `NOT NULL`, `UNIQUE` | Nombre identificador del área. |
 | `descripcion` | `TEXT` | `NULL` | Detalle de las responsabilidades del área. |
+| `direccion` | `VARCHAR(255)` | `NULL` | Dirección física de atención u oficina del área. |
 | `created_at` | `TIMESTAMP WITH TIME ZONE` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP` | Fecha de creación. |
 | `updated_at` | `TIMESTAMP WITH TIME ZONE` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP` | Última actualización. |
 
@@ -415,7 +417,7 @@ stateDiagram-v2
 | Estado Origen | Estado Destino | Acción / Evento | Roles Autorizados | Restricciones de Negocio |
 |---|---|---|---|---|
 | `*` (Ninguno) | `RESERVADO` | `CrearTurno()` | `CIUDADANO`, `ADMINISTRATIVO` | Validar disponibilidad de horario (si es regular) o límite diario (si es sobreturno). |
-| `RESERVADO` | `CANCELADO` | `CancelarTurno()` | **Ciudadano:** Si faltan $\ge 24\text{ hs}$ para el inicio.<br>**Administrativo:** En cualquier momento. | Si cancela el Administrativo, se requiere ingresar obligatoriamente un `motivo_cancelacion`. |
+| `RESERVADO` | `CANCELADO` | `CancelarTurno()` | **Ciudadano:** Si faltan $\ge 24\text{ hs}$ para el inicio.<br>**Administrativo:** En cualquier momento. | El `motivo_cancelacion` es opcional tanto para el ciudadano como para el administrativo. |
 | `RESERVADO` | `COMPLETO` | `RegistrarResultadoCompleto()` | `ADMINISTRATIVO` | - Debe realizarse en la fecha del turno o posterior.<br>- Si el trámite tiene `emite_carnet = true`, el sistema obliga a registrar la fecha de vencimiento e inserta un registro en la tabla `carnets`. |
 | `RESERVADO` | `INCOMPLETO` | `RegistrarResultadoIncompleto()`| `ADMINISTRATIVO` | Debe ingresarse un comentario en `resultado_comentario` detallando los requisitos faltantes. |
 | `RESERVADO` | `AUSENTE` | `RegistrarResultadoAusente()` | `ADMINISTRATIVO` | Cambia el estado a ausente si el ciudadano no concurrió a la cita. |
@@ -492,7 +494,7 @@ Este algoritmo permite encontrar la primera franja libre adecuada para la duraci
 3. Si transcurren los 30 días y no se encuentra ninguna ranura libre, lanzar una excepción indicando que no hay turnos disponibles e invitando a contactar soporte para gestionar un sobreturno.
 
 ### 4.4 Reglas para la Asignación de Sobreturnos (HU-19)
-- Los sobreturnos se asignan para un día específico sin un bloque de horario estricto, o bien se asocian al horario final del día para la cola física.
+- Los sobreturnos se asignan para un día específico fijando como hora de inicio (`fecha_hora_inicio`) la hora de cierre (`hora_fin`) configurada en la agenda del trámite para ese día (ej. `14:00 hs`), facilitando la gestión física de la cola de espera de ventanilla.
 - **Validación del Límite Diario**:
   - Contar todos los turnos activos (`estado != 'CANCELADO'`) del trámite en la fecha elegida que tengan `es_sobreturno = true`.
   - Comparar con el `limite_sobreturnos_diarios` definido en la tabla `tramites`.

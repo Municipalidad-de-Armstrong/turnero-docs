@@ -11,7 +11,7 @@ Este dominio contiene el núcleo algorítmico y transaccional del sistema. Gesti
 - **HU-05** `USU-01` `USU-03` — *Como Ciudadano, quiero elegir turno primero por tipo de trámite y luego por variante.*
   - **Criterios de Aceptación (CA):**
     - Interfaz del Stepper de reserva en dos pasos: primero expone el listado de trámites; tras seleccionar uno, expone las variantes de ese trámite.
-    - Se muestran los requerimientos previos y la documentación a llevar.
+    - Se muestran los requerimientos previos, la documentación a llevar y la dependencia con su dirección física de atención municipal.
 - **HU-06** `USU-04` — *Como Ciudadano, quiero seleccionar más de una variante en una misma solicitud.*
   - **Criterios de Aceptación (CA):**
     - El ciudadano puede marcar múltiples variantes de un mismo trámite (ej: "Examen Teórico" + "Examen Médico").
@@ -19,7 +19,7 @@ Este dominio contiene el núcleo algorítmico y transaccional del sistema. Gesti
 - **HU-07** `USU-06` `USU-05` — *Como Ciudadano, quiero ver los turnos disponibles y elegir fecha y horario.*
   - **Criterios de Aceptación (CA):**
     - Muestra un calendario interactivo con días disponibles y una grilla con los horarios de inicio de slots libres calculados en tiempo real.
-    - Bloquea optimistamente el slot seleccionado al avanzar al paso de confirmación.
+    - Bloquea optimistamente el slot seleccionado al avanzar al paso de confirmación, exponiendo la fecha, hora, área y dirección física del lugar de atención en el resumen previo.
 - **HU-08** `USU-07` — *Como Ciudadano, quiero usar la opción rápida "primer turno disponible".*
   - **Criterios de Aceptación (CA):**
     - Un botón "Primer Turno Disponible" busca y asigna automáticamente la primera ranura libre en los próximos 30 días que cumpla con la duración total requerida.
@@ -31,10 +31,11 @@ Este dominio contiene el núcleo algorítmico y transaccional del sistema. Gesti
 - **HU-11** — *Como Ciudadano o Administrativo, quiero cancelar un turno que ya no necesito.*
   - **Criterios de Aceptación (CA):**
     - **Por el ciudadano:** Solo si faltan $\ge 24\text{ horas}$ (o el tiempo configurado globalmente) para el inicio del turno. Libera el cupo y el turno pasa a estado `CANCELADO`.
-    - **Por el administrativo:** Puede cancelar en cualquier momento. El formulario le exige obligatoriamente ingresar un `motivo_cancelacion`. Se guarda quién canceló en `cancelado_por_id`.
+    - **Por el administrativo:** Puede cancelar en cualquier momento. El campo `motivo_cancelacion` es opcional. Se guarda quién canceló en `cancelado_por_id`.
 - **HU-12** `USU-11` — *Como Ciudadano, quiero ver la lista de mis turnos reservados y mi historial.*
   - **Criterios de Aceptación (CA):**
-    - Panel privado con pestañas: "Próximos turnos" e "Historial". Permite acceder al comprobante de reserva.
+    - Panel privado con pestañas: "Próximos turnos" e "Historial".
+    - Cada tarjeta de turno y el modal de comprobante detallan la fecha, horario en formato 24 hs, área municipal y dirección física del lugar de atención.
 - **HU-15** `ADT-04` — *Como Administrativo, quiero cargar turnos manualmente (presencial, teléfono o WhatsApp).*
   - **Criterios de Aceptación (CA):**
     - Permite buscar un ciudadano por DNI. Si no existe, despliega campos mínimos para registrarlo simultáneamente (Nombre, Apellido, Email, Teléfono) y procede a agendar el turno.

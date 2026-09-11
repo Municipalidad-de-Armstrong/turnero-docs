@@ -1881,6 +1881,10 @@ components:
           type: string
           nullable: true
           example: "Área encargada de tributaciones, tasas y patentes."
+        direccion:
+          type: string
+          nullable: true
+          example: "San Martín 1790 (Palacio Municipal)"
         created_at:
           type: string
           format: date-time
@@ -1898,6 +1902,9 @@ components:
         descripcion:
           type: string
           example: "Módulo de emisión de licencias de conducir y seguridad vial."
+        direccion:
+          type: string
+          example: "San Martín 1790 (Palacio Municipal)"
 
     TramiteResponse:
       type: object
@@ -1916,6 +1923,14 @@ components:
         area_id:
           type: integer
           example: 1
+        area_nombre:
+          type: string
+          nullable: true
+          example: "Tránsito y Licencias"
+        area_direccion:
+          type: string
+          nullable: true
+          example: "San Martín 1790 (Palacio Municipal)"
         nombre:
           type: string
           example: "Renovación Carnet de Conducir B1"
@@ -2232,6 +2247,18 @@ components:
         tramite_nombre:
           type: string
           example: "Renovación Carnet de Conducir B1"
+        area_id:
+          type: integer
+          nullable: true
+          example: 1
+        area_nombre:
+          type: string
+          nullable: true
+          example: "Tránsito y Licencias"
+        area_direccion:
+          type: string
+          nullable: true
+          example: "San Martín 1790 (Palacio Municipal)"
         fecha_hora_inicio:
           type: string
           format: date-time
@@ -2548,6 +2575,9 @@ components:
         descripcion:
           type: string
           example: "Área unificada de licencias de conducir y controles viales."
+        direccion:
+          type: string
+          example: "San Martín 1790 (Palacio Municipal)"
 
     UpdateAdminRequest:
       type: object

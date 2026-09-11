@@ -10,7 +10,7 @@ Este dominio se encarga de estructurar y configurar la oferta de servicios que e
 
 - **HU-14 (Catálogo)** `ADT-01` `ADT-03` — *Como Administrativo, quiero poder configurar el catálogo de trámites y áreas del municipio.*
   - **Criterios de Aceptación (CA):**
-    - El administrativo puede crear, modificar y listar Áreas Municipales (ej: Rentas, Tránsito, Obras Particulares). Cada área cuenta con un Nombre (único) y una Descripción.
+    - El administrativo puede crear, modificar y listar Áreas Municipales (ej: Rentas, Tránsito, Obras Particulares). Cada área cuenta con un Nombre (único), una Descripción y una Dirección física de atención.
     - El administrativo puede crear, modificar y listar Trámites dentro de un Área. Cada trámite define si emite carnet físico (`emite_carnet = true/false`) y un límite diario de sobreturnos.
 - **HU-17** `ADT-06` — *Como Administrativo, quiero asignar la documentación requerida a cada trámite.*
   - **Criterios de Aceptación (CA):**

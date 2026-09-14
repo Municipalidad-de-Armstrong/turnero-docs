@@ -24,14 +24,14 @@ El control de accesos y redirecciones se gestiona a nivel de middleware en Next.
 
 ### C. Rutas de Gestión Operativa (Acceso: `ADMINISTRATIVO` o `ADMINISTRADOR`)
 * **`/admin/dashboard`**: Tablero operativo del día. Muestra la cola de turnos del día actual en tiempo real para todas las áreas. Permite filtrar por área/trámite y marcar asistencias/resultados.
-* **`/admin/turnos`**: Buscador global de turnos históricos o futuros. Permite la edición, reprogramación o cancelación por parte de los operadores.
+* **`/admin/turnos`**: Buscador global de turnos históricos o futuros. Permite la edición, reprogramación o cancelación por parte de los administrativos.
 * **`/admin/turnos/nuevo`**: Panel de carga manual de turnos. Incluye la búsqueda rápida de ciudadano por DNI (o su registro rápido *on-the-fly*).
 * **`/admin/tramites`**: Vista de trámites disponibles por área municipal. Configuración de requisitos y variantes de cada trámite.
 * **`/admin/agenda`**: Configuración de los bloques horarios, días hábiles y capacidad de atención por trámite.
 
 ### D. Rutas de Configuración Global (Acceso exclusivo: `ADMINISTRADOR`)
 * **`/admin/configuracion`**: Configuración de variables del sistema (ej: anticipación de cancelación y límite de sobreturnos).
-* **`/admin/administrativos`**: Listado de cuentas administrativas. Creación de nuevos operadores y desactivación/eliminación de los mismos.
+* **`/admin/administrativos`**: Listado de cuentas administrativas. Creación de nuevos administrativos y desactivación/eliminación de los mismos.
 
 ---
 

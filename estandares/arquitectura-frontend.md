@@ -209,7 +209,7 @@ Para determinar correctamente la estrategia de caché de cada tipo de dato, se e
 
 ### 5.2 Caché de Datos Operacionales (Cola del Día)
 
-Los datos de la cola de atención del día (`/admin/dashboard/cola`) se consideran **operacionales**: cambian con moderada frecuencia (cuando un operador cierra un turno), pero no deben refetchearse cada vez que el usuario navega entre pestañas del panel administrativo.
+Los datos de la cola de atención del día (`/admin/dashboard/cola`) se consideran **operacionales**: cambian con moderada frecuencia (cuando un administrativo cierra un turno), pero no deben refetchearse cada vez que el usuario navega entre pestañas del panel administrativo.
 
 **Patrón estándar:**
 - La tienda `useCatalogStore` expone `fetchCola(filters, force?)` e `invalidateCola(filters?)`.
@@ -219,11 +219,11 @@ Los datos de la cola de atención del día (`/admin/dashboard/cola`) se consider
 
 ### 5.3 Concurrencia Multi-Usuario y Manejo de Datos Obsoletos (Cache Staleness & Concurrency)
 
-Para garantizar la consistencia cuando múltiples operadores administrativos o ciudadanos interactúan en paralelo:
+Para garantizar la consistencia cuando múltiples administrativos o ciudadanos interactúan en paralelo:
 
 1. **Diferenciación por Criticidad de Datos:**
-   - **Datos Maestros de Catálogo (Áreas, Trámites, Horarios de Agenda):** Tienen una tasa de cambio muy baja. La caché en cliente optimiza la lectura en pantalla sin riesgo. Si un operador modifica un trámite, su propia sesión invalida la caché de inmediato (`invalidateCatalog`). Para sincronización entre múltiples terminales, la tienda revalida silenciosamente los datos si la sesión o pestaña recupera el foco (`onFocus`).
-   - **Datos Operacionales (Cola del día):** Tienen una tasa de cambio moderada. La caché por filtros evita re-fetching al navegar entre pestañas, pero se invalida automáticamente tras cada operación CUD del operador actual.
+   - **Datos Maestros de Catálogo (Áreas, Trámites, Horarios de Agenda):** Tienen una tasa de cambio muy baja. La caché en cliente optimiza la lectura en pantalla sin riesgo. Si un administrativo modifica un trámite, su propia sesión invalida la caché de inmediato (`invalidateCatalog`). Para sincronización entre múltiples terminales, la tienda revalida silenciosamente los datos si la sesión o pestaña recupera el foco (`onFocus`).
+   - **Datos Operacionales (Cola del día):** Tienen una tasa de cambio moderada. La caché por filtros evita re-fetching al navegar entre pestañas, pero se invalida automáticamente tras cada operación CUD del administrativo actual.
    - **Datos Altamente Dinámicos (Disponibilidad de Slots para Reserva `GET /turnos/disponibilidad`):** **Queda estrictamente prohibido cachear slots horarios en cliente por tiempos prolongados.** La disponibilidad se consulta siempre en tiempo real contra la API backend.
 2. **Validación de Concurrencia en Backend (Verdad Absoluta):**
    - La caché en cliente es una capa de optimización visual (UX). La **verdad absoluta e integridad de datos residen en el backend (FastAPI + PostgreSQL)**.

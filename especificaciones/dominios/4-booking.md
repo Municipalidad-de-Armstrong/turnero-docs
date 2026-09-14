@@ -39,7 +39,7 @@ Este dominio contiene el núcleo algorítmico y transaccional del sistema. Gesti
 - **HU-15** `ADT-04` — *Como Administrativo, quiero cargar turnos manualmente (presencial, teléfono o WhatsApp).*
   - **Criterios de Aceptación (CA):**
     - Permite buscar un ciudadano por DNI. Si no existe, despliega campos mínimos para registrarlo simultáneamente (Nombre, Apellido, Email, Teléfono) y procede a agendar el turno.
-    - Al crear el ciudadano al vuelo, el backend genera su cuenta en estado `PENDING_VALIDATION` y le envía un correo electrónico de confirmación para que cree su contraseña y active su cuenta de manera autónoma en el futuro (igualando el flujo del portal web).
+    - Al registrar inmediatamente al ciudadano, el backend genera su cuenta en estado `PENDING_VALIDATION` y le envía un correo electrónico de confirmación para que cree su contraseña y active su cuenta de manera autónoma en el futuro (igualando el flujo del portal web).
 - **HU-16** `ADT-05` — *Como Administrativo, quiero modificar los datos de cualquier turno existente en el sistema.*
   - **Criterios de Aceptación (CA):**
     - El administrativo puede reprogramar, cancelar o editar comentarios de cualquier turno registrado en cualquier área, sin la restricción de anticipación mínima del ciudadano.

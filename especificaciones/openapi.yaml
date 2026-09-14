@@ -1219,7 +1219,7 @@ paths:
         Permite a un Administrativo cargar un sobreturno asignado a una fecha específica fuera de los intervalos de la agenda regular.
         - El sobreturno se asigna a una prioridad (Alta, Media, Baja).
         - Se valida que no se supere el límite diario de sobreturnos definido para el trámite.
-        - Al listarse para los operadores, la cola diaria se ordena por prioridad y fecha de creación.
+        - Al listarse para el personal administrativo, la cola diaria se ordena por prioridad y fecha de creación.
       operationId: createSobreturno
       requestBody:
         required: true

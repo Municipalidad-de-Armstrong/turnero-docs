@@ -267,17 +267,17 @@ stateDiagram-v2
 ---
 
 ### [x] Slice 9: Operación - Sobreturnos con Prioridad y Agendamiento Manual (`operation` & `booking`)
-*Meta: Permitir la carga de sobreturnos con prioridades (Alta, Media, Baja) respetando el límite diario y la carga de turnos presenciales con registro "al vuelo" de ciudadanos.*
+*Meta: Permitir la carga de sobreturnos con prioridades (Alta, Media, Baja) respetando el límite diario y la carga de turnos presenciales con registro inmediato de ciudadanos.*
 * **Documentación de Referencia Obligatoria:**
   - [5-operation.md](../especificaciones/dominios/5-operation.md#L10-L15) (HU-19: Cargar sobreturnos con prioridad y validación del límite diario `limite_sobreturnos_diarios`).
-  - [4-booking.md](../especificaciones/dominios/4-booking.md#L38-L45) (HU-15: Cargar turnos manualmente con registro de ciudadano al vuelo en `PENDING_VALIDATION`, HU-16: Editar turnos).
+  - [4-booking.md](../especificaciones/dominios/4-booking.md#L38-L45) (HU-15: Cargar turnos manualmente con registro inmediato de ciudadano en `PENDING_VALIDATION`, HU-16: Editar turnos).
   - [openapi.yaml](../especificaciones/openapi.yaml) (Endpoints `/admin/sobreturnos`, `/admin/turnos/manual`, `/admin/turnos`).
   - [sitemap-rutas.md](../especificaciones/sitemap-rutas.md#L27-L28) (Rutas `/admin/turnos` y `/admin/turnos/nuevo`).
 * **Backend (`turnero_api`):**
   - [x] Implementar endpoint `POST /admin/sobreturnos` validando que la cantidad de sobreturnos del día no supere `limite_sobreturnos_diarios` del trámite.
   - [x] Actualizar el ordenamiento de la cola diaria (`GET /admin/dashboard/cola`) agrupando sobreturnos al final, ordenados por Prioridad (`ALTA` > `MEDIA` > `BAJA`) y FIFO (`created_at`).
-  - [x] Implementar endpoint `POST /admin/turnos/manual` que busque un ciudadano por DNI (vía HMAC) o lo cree al vuelo en estado `PENDING_VALIDATION`.
-  - [x] Crear buscador global de turnos `GET /admin/turnos` para operadores.
+  - [x] Implementar endpoint `POST /admin/turnos/manual` que busque un ciudadano por DNI (vía HMAC) o lo registre de forma inmediata en estado `PENDING_VALIDATION`.
+  - [x] Crear buscador global de turnos `GET /admin/turnos` para administrativos.
   - [x] Escribir tests unitarios y de integración para sobreturnos y agendamiento manual.
 * **Frontend (`turnero`):**
   - [x] Crear formulario modal para solicitar sobreturno con selector de prioridad (`PrioritySelector`).

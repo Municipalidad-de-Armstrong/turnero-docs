@@ -34,7 +34,7 @@ Usuario externo que se registra y gestiona sus turnos por una interfaz amigable.
 
 ### 1.2 Administrativo (usuario interno) — `ADT`
 
-Operador interno con **panel exclusivo**; ingresa con email + contraseña (`ADT-01`, `ADT-02`). Los usuarios administrativos tienen acceso global y pueden gestionar todas las áreas del municipio.
+Personal administrativo interno con **panel exclusivo**; ingresa con email + contraseña (`ADT-01`, `ADT-02`). Los usuarios administrativos tienen acceso global y pueden gestionar todas las áreas del municipio.
 
 | Permiso | Req. | Descripción |
 |---|---|---|

@@ -127,7 +127,7 @@ const REQUIREMENTS_DATA = [
     id: 'ADT-01',
     actor: 'ADT',
     title: 'Panel para el personal municipal',
-    desc: 'Acceso privado exclusivo para los operadores del municipio encargado de gestionar turnos y agendas.',
+    desc: 'Acceso privado exclusivo para el personal administrativo del municipio encargado de gestionar turnos y agendas.',
     userStories: [
       { detail: 'Ingresar a un panel exclusivo para ver, crear y modificar turnos de todas las áreas municipales.' }
     ],
@@ -157,7 +157,7 @@ const REQUIREMENTS_DATA = [
     id: 'ADT-05',
     actor: 'ADT',
     title: 'Modificación de turnos existentes',
-    desc: 'El operador municipal puede cambiar la fecha, el horario o reasignar cualquier turno registrado.',
+    desc: 'El personal administrativo puede cambiar la fecha, el horario o reasignar cualquier turno registrado.',
     userStories: [
       { detail: 'Modificar los datos o reprogramar cualquier turno del sistema.' }
     ],
@@ -198,7 +198,7 @@ const REQUIREMENTS_DATA = [
     id: 'ADT-09',
     actor: 'ADT',
     title: 'Cierre del trámite y resultado',
-    desc: 'Al terminar de atender a un ciudadano, el operador registra si el trámite finalizó correctamente o si faltó documentación.',
+    desc: 'Al terminar de atender a un ciudadano, el administrativo registra si el trámite finalizó correctamente o si faltó documentación.',
     userStories: [
       { detail: 'Marcar el turno como completo, incompleto o ausente según corresponda.' }
     ],

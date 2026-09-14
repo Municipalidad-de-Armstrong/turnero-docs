@@ -26,7 +26,7 @@
 
 ## 2. Perfil: Administrativo
 
-> Operador interno que gestiona la operativa diaria desde un panel exclusivo. Ingresa con email y contraseña.
+> Personal administrativo interno que gestiona la operativa diaria desde un panel exclusivo. Ingresa con email y contraseña.
 
 | ID | Requerimiento |
 |---|---|

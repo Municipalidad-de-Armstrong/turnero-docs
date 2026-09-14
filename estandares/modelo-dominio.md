@@ -532,4 +532,4 @@ Este algoritmo permite encontrar la primera franja libre adecuada para la duraci
   - **Variantes:** Duración en minutos acotada estrictamente entre 1 y 480 minutos (máximo 8 horas).
   - **Enlaces:** URLs válidas con protocolo obligatorio (`http://` o `https://`).
 - **Agendas y Horarios:**
-  - Horas de inicio y fin en formato de 24 horas válido (`^([01]\d|2[0-3]):([0-5]\d)$`) con validación de que $\text{hora\_fin} > \text{hora\_inicio}$. Capacidad simultánea acotada entre 1 y 50 operadores concurrentes.
+  - Horas de inicio y fin en formato de 24 horas válido (`^([01]\d|2[0-3]):([0-5]\d)$`) con validación de que $\text{hora\_fin} > \text{hora\_inicio}$. Capacidad simultánea acotada entre 1 y 50 puestos de atención / administrativos concurrentes.

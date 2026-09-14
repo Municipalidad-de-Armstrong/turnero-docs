@@ -22,7 +22,7 @@ Este dominio se encarga de definir la capacidad de atención y disponibilidad te
 1. **Configuración por Trámite:**
    - La disponibilidad horaria se rige a nivel de **Trámite** y no por área global. Esto permite que el trámite de "Licencia de Conducir" tenga horarios o capacidades diferentes a las del trámite de "Pago de Tasas Municipales", aun perteneciendo a la misma área física.
 2. **Capacidad Simultánea de Atención:**
-   - La variable `capacidad_simultanea` (entero entre 1 y 50, por defecto `1`) define cuántos ciudadanos pueden tener un turno superpuesto en el mismo bloque temporal. Equivale a la cantidad de ventanillas u operadores disponibles para el trámite en ese horario.
+   - La variable `capacidad_simultanea` (entero entre 1 y 50, por defecto `1`) define cuántos ciudadanos pueden tener un turno superpuesto en el mismo bloque temporal. Equivale a la cantidad de ventanillas o administrativos disponibles para el trámite en ese horario.
 3. **Persistencia de Reglas vs. Turnos Existentes:**
    - Si el administrativo modifica la agenda semanal (por ejemplo, reduce la capacidad simultánea de 3 a 1 para los lunes, o cambia el horario de cierre), los turnos que ya fueron reservados previamente por ciudadanos para fechas futuras **deben ser respetados y no se cancelan de forma automática**. Las nuevas reglas de agenda aplican únicamente para búsquedas y reservas realizadas a partir del momento de la modificación.
 4. **Desactivación Temporal:**

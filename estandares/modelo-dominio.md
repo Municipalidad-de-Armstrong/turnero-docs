@@ -201,6 +201,11 @@ Registra la información de contacto y credenciales de acceso para ciudadanos, a
 - `idx_usuarios_email` en `email` (búsqueda en login).
 - `idx_usuarios_dni` en `dni` (búsqueda de ciudadanos durante el registro simultáneo).
 
+*Ciclo de vida de la cuenta de ciudadano:*
+- Al registrarse, la cuenta se crea con `estado = 'PENDING_VALIDATION'` y `activo = false`. No permite iniciar sesión ni solicitar turnos autónomamente.
+- Al validar el enlace enviado al correo electrónico, la cuenta realiza la transición a `estado = 'ACTIVE'` y `activo = true`, habilitando el acceso a la plataforma.
+- Ante suspensión administrativa o resolución de usurpación, pasa a `estado = 'INACTIVE'` y `activo = false`.
+
 ### 2.3 Tabla `areas`
 Entidades de administración del municipio (ej: Tránsito, Rentas, Obras Particulares).
 

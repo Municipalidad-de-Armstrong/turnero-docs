@@ -14,7 +14,11 @@ Este dominio es responsable de la gestión de cuentas de usuario, el control de 
     - El frontend y backend validan la coincidencia exacta de ambas contraseñas antes del despacho.
     - El sistema valida que el DNI sea único y el Email sea único.
     - La contraseña debe cumplir con una política mínima de seguridad (mínimo 8 caracteres, al menos una letra y un número).
-    - Al registrarse, la cuenta se crea en estado `PENDING_VALIDATION` y se envía un token de confirmación de un solo uso por correo electrónico.
+    - Al registrarse, la cuenta se crea en estado `PENDING_VALIDATION` con `activo = False`. El frontend redirige al usuario a la pantalla de aviso `/auth/registro-pendiente`, informándole que debe revisar su bandeja de entrada y carpeta de spam.
+    - El backend genera un token de confirmación de un solo uso con expiración de 24 horas (almacenado en Redis) y despacha asíncronamente un correo electrónico con un enlace hacia `/auth/confirmar-cuenta?token={token}`.
+    - Si un usuario con cuenta en `PENDING_VALIDATION` intenta iniciar sesión, el sistema rechaza el intento con código `403 Forbidden` indicando: *"Tu cuenta está pendiente de confirmación. Por favor, revisa tu correo electrónico para activarla."*
+    - Al acceder al enlace de confirmación, el frontend invoca `POST /auth/verify-email`. Tras validar el token, la cuenta se actualiza a `estado = ACTIVE` y `activo = True`, el token es invalidado y se muestra la pantalla de confirmación exitosa con acceso directo al inicio de sesión.
+    - La pantalla de aviso permite reenviar el correo de confirmación mediante `POST /auth/resend-verification` respetando medidas de seguridad anti-enumeración y control de frecuencia (cooldown).
 - **HU-02** — *Como Ciudadano o Administrativo, quiero iniciar y cerrar sesión de forma segura.*
   - **Criterios de Aceptación (CA):**
     - El inicio de sesión valida el email y la contraseña contra el hash almacenado en la base de datos (encriptación `bcrypt`).

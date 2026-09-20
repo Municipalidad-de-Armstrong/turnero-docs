@@ -89,6 +89,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Cuenta no confirmada (pendiente de validación por correo electrónico).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       summary: Cerrar sesión (Eliminar token)
       description: Invalida la sesión actual del usuario eliminando la cookie de autenticación.
@@ -182,6 +188,74 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/verify-email:
+    post:
+      summary: Confirmar registro de cuenta mediante token enviado por correo
+      description: Valida el token recibido por email tras el registro de un ciudadano. Cambia el estado de la cuenta a ACTIVE y la activa para operar en la plataforma.
+      operationId: verifyEmail
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+              properties:
+                token:
+                  type: string
+                  description: Token de verificación de un solo uso recibido por correo
+                  example: abc123def456ghi789
+      responses:
+        '200':
+          description: Cuenta confirmada con éxito.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: Cuenta confirmada exitosamente. Ya puede iniciar sesión.
+        '400':
+          description: Token de confirmación inválido o expirado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/resend-verification:
+    post:
+      summary: Reenviar correo con enlace de confirmación
+      description: Envía nuevamente el enlace de confirmación a la casilla del usuario si su cuenta sigue en estado PENDING_VALIDATION.
+      operationId: resendVerificationEmail
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: ciudadano@armstrong.gov.ar
+      responses:
+        '200':
+          description: Enlace de confirmación reenviado (anti-enumeración).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: Si el correo está registrado y pendiente de confirmación, se ha reenviado el enlace.
 
   /usuarios/me:
     get:
@@ -1732,6 +1806,26 @@ components:
           type: string
           minLength: 8
           example: "Contrasenia123!"
+
+    VerifyEmailRequest:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          description: Token de verificación de un solo uso recibido por correo
+          example: "abc123def456ghi789"
+
+    ResendVerificationRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: "ciudadano@armstrong.gov.ar"
 
     LoginRequest:
       type: object

@@ -195,6 +195,7 @@ Para evitar la degradación de la experiencia de usuario (parpadeos/flickers, sp
 
 - **Prohibición de Fetching Directo Repetitivo:** Queda prohibido realizar solicitudes HTTP incondicionales en `useEffect` con `useState` aislado dentro de páginas para datos maestros o de catálogo (como Áreas, Trámites y Variantes).
 - **Uso Obligatorio de Stores Centralizados (Zustand):** Los datos compartidos entre rutas deben ser consumidos a través de tiendas Zustand (`useCatalogStore`), las cuales mantienen en memoria del navegador el estado `isInitialized`.
+- **Aislamiento de Sesión en Stores de Usuario (`useTurnosStore`, `useNotificationsStore`):** Las tiendas que almacenan datos privados del usuario autenticado asocian su caché en memoria al identificador del usuario activo (`currentUserId`) y se suscriben a cambios de sesión en `useAuthStore` para ejecutar `reset()` automáticamente al cerrar sesión o cambiar de cuenta, además de utilizar `cache: "no-store"` en `apiClient`.
 - **Invalidación Reactiva (CUD):** Al ejecutar operaciones de creación, modificación o eliminación (CUD) de entidades de catálogo, el componente responsable debe invocar explícitamente `invalidateCatalog()`. Esto marca la caché como desactualizada y realiza un re-fetch automático en segundo plano para mantener la interfaz sincronizada de forma reactiva.
 
 ### 5.1 Clasificación de Datos por Nivel de Criticidad de Caché
